@@ -52,6 +52,7 @@ in terminal to include the SUMO python packages.
 Our code uses WandB as logger. Before running our code, you should log in to WandB locally. Please refer to https://docs.wandb.ai/quickstart for more detail.
 
 # Usage
+Train the agent by:
 ```python
 python launcher.py --env ENV --algo ALGO --name NAME --para PARA
 ```
