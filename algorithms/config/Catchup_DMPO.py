@@ -3,7 +3,7 @@ from numpy import pi
 import torch.nn
 from algorithms.models import MLP
 from algorithms.utils import Config
-from algorithms.mbdppo.MB_DPPO import MB_DPPOAgent
+
 
 def getArgs(radius_p, radius_v, radius_pi, env):
 
@@ -22,7 +22,7 @@ def getArgs(radius_p, radius_v, radius_pi, env):
     alg_args.model_based = True
     alg_args.load_pretrained_model = False
     
-    alg_args.pretrained_model = 'checkpoints/standard_CACC_catchup_MB_DPPOAgent_30333/30000_6413.795132637025.pt'
+    alg_args.pretrained_model = 'D:/A_RL/MB-MARL/checkpoints/standard _CACC_catchup_MB_DPPOAgent_54627/1023056_-1581.7473050147296.pt'
 
     alg_args.n_traj = 2048
     alg_args.model_traj_length = 25

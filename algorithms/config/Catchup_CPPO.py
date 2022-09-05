@@ -3,7 +3,7 @@ from numpy import pi
 import torch.nn
 from algorithms.models import MLP
 from algorithms.utils import Config
-from algorithms.mbdppo.MB_DPPO import MB_DPPOAgent
+
 
 def getArgs(radius_p, radius_v, radius_pi, env):
 

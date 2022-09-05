@@ -58,7 +58,7 @@ class CACCEnv:
             c_rewards = -COLLISION_WT * (np.minimum(self.hs_cur - COLLISION_HEADWAY, 0)) ** 2
         else:
             c_rewards = 0
-        rewards = h_rewards + v_rewards + u_rewards 
+        rewards = h_rewards + v_rewards + u_rewards + c_rewards
        # rewards = v_rewards
         return rewards
     
@@ -308,6 +308,9 @@ class CACCEnv:
             # if i <= self.n_agent-3:
             #     self.neighbor_mask[i,i+2] = 1
         # 5 levels of high level control: conservative -> aggressive
+        
+        #self.neighbor_mask = np.identity(self.n_agent)
+        
         self.n_a_ls = [4] * self.n_agent
         self.n_a = 4
         # a_interval = (self.h_g - self.h_s) / ((self.n_a+1)*0.5)

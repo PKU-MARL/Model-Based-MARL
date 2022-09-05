@@ -25,6 +25,8 @@ class FigureEightWrapper(AccelEnv):
         self.init_distance_mask()
         self.n_s_ls = [2] * self.n_agent
         self.n_a_ls = [1] * self.n_agent
+        
+        #self.neighbor_mask = np.identity(self.n_agent)
 
     @property
     def action_space(self):
@@ -47,6 +49,11 @@ class FigureEightWrapper(AccelEnv):
 
     def get_state_(self):
         """See class definition."""
+        
+        # for veh_id in self.sorted_ids:
+            # print('speed=',self.k.network.max_speed())
+            # print('po=',self.k.network.length())
+
         speed = [self.k.vehicle.get_speed(veh_id) / self.k.network.max_speed()
                  for veh_id in self.sorted_ids]
         pos = [self.k.vehicle.get_x_by_id(veh_id) / self.k.network.length()

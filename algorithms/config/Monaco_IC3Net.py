@@ -3,7 +3,7 @@ from numpy import pi
 import torch.nn
 from algorithms.models import MLP
 from algorithms.utils import Config
-from algorithms.mbdppo.MB_DPPO import MB_DPPOAgent
+
 
 def getArgs(radius_p, radius_v, radius_pi, env):
 
@@ -16,16 +16,16 @@ def getArgs(radius_p, radius_v, radius_pi, env):
     alg_args.n_test = 5
     alg_args.model_validate_interval = 10
     alg_args.test_interval = 20
-    alg_args.rollout_length = 600
-    alg_args.test_length = 600
-    alg_args.max_episode_len = 600
+    alg_args.rollout_length = 720
+    alg_args.test_length = 720
+    alg_args.max_episode_len = 720
     alg_args.model_based = False
     alg_args.load_pretrained_model = False
     alg_args.pretrained_model = 'checkpoints/standard_makeFigureEight2_MB_DPPOAgent_17361/81501_5222.7847817614875.pt'
     alg_args.n_traj = 2048
     alg_args.model_traj_length = 8
     alg_args.model_error_thres = 0.
-    alg_args.model_batch_size = 256
+    alg_args.model_batch_size = 128
     alg_args.model_buffer_size = 15
     alg_args.model_update_length = 2
     alg_args.model_length_schedule = lambda x: min(25, 8 + int(x/4))
@@ -68,22 +68,22 @@ def getArgs(radius_p, radius_v, radius_pi, env):
     p_args.residual = True
     p_args.edge_embed_dim = 12
     p_args.node_embed_dim = 8
-    p_args.edge_hidden_size = [16, 16]
-    p_args.node_hidden_size = [16, 16]
+    p_args.edge_hidden_size = [64, 64]
+    p_args.node_hidden_size = [64, 64]
     p_args.reward_coeff = 10.0
     agent_args.p_args = p_args
 
     v_args = Config()
     v_args.network = MLP
     v_args.activation = torch.nn.ReLU
-    v_args.sizes = [-1, 64, 64, 1]
+    v_args.sizes = [-1, 1024, 1024, 1]
     v_args.hidden_dim = 64
     agent_args.v_args = v_args
 
     pi_args = Config()
     pi_args.network = MLP
     pi_args.activation = torch.nn.ReLU
-    pi_args.sizes = [-1, 64, 64, agent_args.action_space.n]
+    pi_args.sizes = [-1, 512, 512, agent_args.action_space.n]
     pi_args.squash = False
     agent_args.pi_args = pi_args
 

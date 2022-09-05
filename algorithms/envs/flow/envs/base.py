@@ -497,7 +497,6 @@ class Env(gym.Env, metaclass=ABCMeta):
             type_id, edge, lane_index, pos, speed = \
                 self.initial_state[veh_id]
                 
-            print(veh_id)
 
             try:
                 # self.k.vehicle.remove(veh_id)
@@ -622,10 +621,12 @@ class Env(gym.Env, metaclass=ABCMeta):
             list of actions provided by the RL algorithm
         """
         # ignore if no actions are issued
+        # print('actions=',rl_actions)
         if rl_actions is None:
             return
 
         rl_clipped = self.clip_actions(rl_actions)
+        # print('actions=',rl_clipped)
         self._apply_rl_actions(rl_clipped)
 
     @abstractmethod

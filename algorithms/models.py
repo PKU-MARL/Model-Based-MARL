@@ -380,7 +380,10 @@ class GraphConvolutionalModel(nn.Module):
             Output: 
                 h: [batch_size, node_embed_dim]
             """
-            embedding = 0
+
+            # embedding = 0
+            #hear 12 is edge_embed_dim
+            embedding = torch.zeros([a.size()[0],12], dtype=torch.float32, device = a.device)
             for h in h_ls:
                 embedding += h
             a = self.action_embedding(a)
@@ -409,6 +412,7 @@ class GraphConvolutionalModel(nn.Module):
         super().__init__()
         self.logger = logger.child("p")
         self.adj = adj > 0
+        # print('adj=',adj)
         self.state_dim = state_dim
         self.action_dim = action_dim
         self.n_agent = n_agent
@@ -449,6 +453,9 @@ class GraphConvolutionalModel(nn.Module):
         pred_s, pred_r, pred_d = [], [], []
         s0 = s.select(dim=1, index=0)
         length = min(length, s.shape[1])
+        
+        
+        
         for t in range(length):
             r_, s_, d_ = self.forward(s0, a.select(dim=1, index=t))
             pred_r.append(r_)
@@ -524,6 +531,7 @@ class GraphConvolutionalModel(nn.Module):
     def _init_edge_nets(self):
         edge_nets = nn.ModuleList()
         sizes = [self.node_embed_dim * 2] + self.edge_hidden_size + [self.edge_embed_dim]
+        # print('adj=',self.adj)
         for i in range(self.n_agent):
             for j in range(i + 1, self.n_agent):
                 if self.adj[i][j]:

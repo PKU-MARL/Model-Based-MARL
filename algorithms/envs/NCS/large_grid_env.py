@@ -47,7 +47,7 @@ class LargeGridController:
 
 
 class LargeGridEnv(TrafficSimulator):
-    def __init__(self, config, port=0, output_path='', is_record=False, record_stat=False):
+    def __init__(self, config, port=50, output_path='', is_record=False, record_stat=False):
         self.peak_flow1 = config.getint('peak_flow1')
         self.peak_flow2 = config.getint('peak_flow2')
         self.init_density = config.getfloat('init_density')
@@ -55,6 +55,7 @@ class LargeGridEnv(TrafficSimulator):
         self.observation_space=Box(0, 1e6, shape=[12])
         self.reward_range=None
         self.metadata=None
+
         super().__init__(config, output_path, is_record, record_stat, port=port)
 
     def _get_node_phase_id(self, node_name):
@@ -94,6 +95,9 @@ class LargeGridEnv(TrafficSimulator):
             for nnode in neighbor_map['nt%d' % (i+1)]:
                 ni = self.node_names.index(nnode)
                 self.neighbor_mask[i, ni] = 1
+                
+        #self.neighbor_mask = np.identity(25)
+        
         logging.info('neighbor mask:\n %r' % self.neighbor_mask)
 
     def _init_distance_map(self):
@@ -134,40 +138,42 @@ class LargeGridEnv(TrafficSimulator):
             plot_cdf(data)
             plt.ylabel(name)
             fig.savefig(self.output_path + self.name + '_' + name + '.png')
+
+
             
-            
-    def reset(self):
+ #------------------------------------------------------------------------           
+    # def reset(self):
         
 
         
-        state = super().reset()
+    #     state = super().reset()
 
-        # state = self.env.reset()
+    #     # state = self.env.reset()
 
-        state = np.array(state, dtype=np.float32)
-        self.state = state
-        # print(state)
-        return state
+    #     state = np.array(state, dtype=np.float32)
+    #     self.state = state
+    #     # print(state)
+    #     return state
     
-    def step(self, action):
-        # super().step(action)
-        if isinstance(action, np.ndarray):
-            action = action.tolist()
-        # for action dim problem list 1 * action_dim
-        if type(action[0]) == list:
-            action = action[0]
-        state, reward, done, info = super().step(action)
-        # if self.test:
-        #     reward = self._comparable_reward()
-        state = np.array(state, dtype=np.float32)
-        reward = np.array(reward, dtype=np.float32)
-        done = np.array([done]*25, dtype=np.float32)
-        self.state=state
-        return state, reward, done, None
+    # def step(self, action):
+    #     # super().step(action)
+    #     if isinstance(action, np.ndarray):
+    #         action = action.tolist()
+    #     # for action dim problem list 1 * action_dim
+    #     if type(action[0]) == list:
+    #         action = action[0]
+    #     state, reward, done, info = super().step(action)
+    #     # if self.test:
+    #     #     reward = self._comparable_reward()
+    #     state = np.array(state, dtype=np.float32)
+    #     reward = np.array(reward, dtype=np.float32)
+    #     done = np.array([done]*25, dtype=np.float32)
+    #     self.state=state
+    #     return state, reward, done, None
 
     
-    def get_state_(self):
-        return self.state
+    # def get_state_(self):
+    #     return self.state
             
 
 

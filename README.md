@@ -17,7 +17,7 @@ Code for the paper "Scalable Model-based Policy Optimization for Decentralized N
 4. Figure Eight
 5. ATSC Grid
 6. ATSC Monaco
-7. UAVFC
+7. UAVFC  (will be available soon)
 
 # Environment setup
 1. SUMO installation. Version 1.11.0
@@ -55,7 +55,7 @@ Our code uses WandB as logger. Before running our code, you should log in to Wan
 ```python
 python launcher.py --env ENV --algo ALGO --name NAME --para PARA
 ```
-`ENV` specifies which environment to run in, including `eight`, `ring`, `catchup`， `slowdown`, `Grid`, `Monaco`, `UAV_9d` .
+`ENV` specifies which environment to run in, including `eight`, `ring`, `catchup`， `slowdown`, `Grid`, `Monaco`.
 
 `ALGO` specifies the algorithm to use, including `IC3Net`, `CPPO`, `DPPO`, `DMPO`.
 

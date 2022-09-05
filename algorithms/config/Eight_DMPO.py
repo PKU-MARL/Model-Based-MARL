@@ -3,7 +3,7 @@ from numpy import pi
 import torch.nn
 from algorithms.models import MLP
 from algorithms.utils import Config
-from algorithms.mbdppo.MB_DPPO import MB_DPPOAgent
+
 
 def getArgs(radius_p, radius_v, radius_pi, env):
 
@@ -21,7 +21,7 @@ def getArgs(radius_p, radius_v, radius_pi, env):
     alg_args.max_episode_len = 1500
     alg_args.model_based = True
     alg_args.load_pretrained_model = False
-    alg_args.pretrained_model = 'checkpoints/standard_makeFigureEight2_MB_DPPOAgent_17361/81501_5222.7847817614875.pt'
+    alg_args.pretrained_model = 'checkpoints/standard _makeFigureEight2_MB_DPPOAgent_35446/526514_19.44389781101534.pt'
     alg_args.n_traj = 2048
     alg_args.model_traj_length = 25
     alg_args.model_error_thres = 2e-4

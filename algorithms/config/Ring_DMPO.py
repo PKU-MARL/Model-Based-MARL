@@ -3,7 +3,7 @@ from numpy import pi
 import torch.nn
 from algorithms.models import MLP
 from algorithms.utils import Config
-from algorithms.mbdppo.MB_DPPO import MB_DPPOAgent
+
 
 def getArgs(radius_p, radius_v, radius_pi, env):
 
@@ -21,11 +21,12 @@ def getArgs(radius_p, radius_v, radius_pi, env):
     alg_args.max_episode_len = 3000
     alg_args.model_based = True
     alg_args.load_pretrained_model = False
-    alg_args.pretrained_model = 'checkpoints/standard_makeRingAttenuation_MB_DPPOAgent_62746/164849_-5997.291270560293.pt'
+    alg_args.pretrained_model = 'checkpoints/standard _makeRingAttenuation_MB_DPPOAgent_17293/2054577_-551.1475067236545.pt'
+    # alg_args.pretrained_model = 'checkpoints/standard _makeRingAttenuation_MB_DPPOAgent_5715/165000_-5999.50454407513.pt'
     alg_args.n_traj = 2048
     alg_args.model_traj_length = 25
     alg_args.model_error_thres = 2e-4
-    alg_args.model_prob = 0.5
+    alg_args.model_prob = 1
     alg_args.model_batch_size = 256
     alg_args.model_buffer_size = 15
     alg_args.model_update_length = 4

@@ -3,7 +3,7 @@ from numpy import pi
 import torch.nn
 from algorithms.models import MLP
 from algorithms.utils import Config
-from algorithms.mbdppo.MB_DPPO import MB_DPPOAgent
+
 
 def getArgs(radius_p, radius_v, radius_pi, env):
 
@@ -15,9 +15,9 @@ def getArgs(radius_p, radius_v, radius_pi, env):
     alg_args.n_model_update_warmup = 10
     alg_args.n_test = 5
     alg_args.test_interval = 20
-    alg_args.rollout_length = 600
-    alg_args.test_length = 600
-    alg_args.max_episode_len = 600
+    alg_args.rollout_length = 720
+    alg_args.test_length = 720
+    alg_args.max_episode_len = 720
     alg_args.model_based = False
     alg_args.load_pretrained_model = False
     alg_args.pretrained_model = None
@@ -58,13 +58,13 @@ def getArgs(radius_p, radius_v, radius_pi, env):
     v_args = Config()
     v_args.network = MLP
     v_args.activation = torch.nn.ReLU
-    v_args.sizes = [-1, 128, 128, 1]
+    v_args.sizes = [-1, 256, 256, 1]
     agent_args.v_args = v_args
 
     pi_args = Config()
     pi_args.network = MLP
     pi_args.activation = torch.nn.ReLU
-    pi_args.sizes = [-1, 128, 128, agent_args.action_space.n]
+    pi_args.sizes = [-1, 256, 256, agent_args.action_space.n]
     pi_args.squash = False
     agent_args.pi_args = pi_args
 

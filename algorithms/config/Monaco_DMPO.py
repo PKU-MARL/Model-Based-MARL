@@ -3,7 +3,7 @@ from numpy import pi
 import torch.nn
 from algorithms.models import MLP
 from algorithms.utils import Config
-from algorithms.mbdppo.MB_DPPO import MB_DPPOAgent
+
 
 def getArgs(radius_p, radius_v, radius_pi, env):
 
@@ -11,24 +11,24 @@ def getArgs(radius_p, radius_v, radius_pi, env):
     alg_args.n_iter = 25000
     alg_args.n_inner_iter = 10
     alg_args.n_warmup = 50
-    alg_args.n_model_update = int(5e2)
+    alg_args.n_model_update = int(1e3)
     alg_args.n_model_update_warmup = int(2e4)
     alg_args.n_test = 5
     alg_args.model_validate_interval = 10
     alg_args.test_interval = 20
-    alg_args.rollout_length = 600
-    alg_args.test_length = 600
-    alg_args.max_episode_len = 600
+    alg_args.rollout_length = 720
+    alg_args.test_length = 720
+    alg_args.max_episode_len = 720
     alg_args.model_based = True
     alg_args.load_pretrained_model = False
     
     alg_args.pretrained_model = 'checkpoints/standard_CACC_catchup_MB_DPPOAgent_30333/30000_6413.795132637025.pt'
 
     alg_args.n_traj = 2048
-    alg_args.model_traj_length = 25
-    alg_args.model_error_thres = 5e-4
+    alg_args.model_traj_length = 100
+    alg_args.model_error_thres = 1e-5
     alg_args.model_prob = 0.5
-    alg_args.model_batch_size = 512
+    alg_args.model_batch_size = 128
     alg_args.model_buffer_size = 15
     alg_args.model_update_length = 4
     alg_args.model_length_schedule = None
@@ -43,9 +43,9 @@ def getArgs(radius_p, radius_v, radius_pi, env):
     agent_args.v_coeff = 1.0
     agent_args.v_thres = 0.
     agent_args.entropy_coeff = 0.0
-    agent_args.lr = 2e-3
-    agent_args.lr_v = 5e-4
-    agent_args.lr_p = 5e-4
+    agent_args.lr = 1e-4
+    agent_args.lr_v = 1e-4
+    agent_args.lr_p = 1e-4
     agent_args.n_update_v = 15 # deprecated
     agent_args.n_update_pi = 10
     agent_args.n_minibatch = 1
@@ -56,7 +56,7 @@ def getArgs(radius_p, radius_v, radius_pi, env):
     agent_args.observation_space = env.observation_space
     agent_args.hidden_state_dim = 8
     agent_args.embedding_sizes = [env.observation_space.shape[0], 16, agent_args.hidden_state_dim]
-    agent_args.observation_dim = 5
+    agent_args.observation_dim = 22
     agent_args.action_space = env.action_space
     agent_args.adj = env.neighbor_mask
     agent_args.radius_v = radius_v
@@ -69,22 +69,22 @@ def getArgs(radius_p, radius_v, radius_pi, env):
     p_args.n_embedding = 4
     p_args.residual = True
     p_args.edge_embed_dim = 12
-    p_args.node_embed_dim = 8
-    p_args.edge_hidden_size = [16, 16]
-    p_args.node_hidden_size = [16, 16]
+    p_args.node_embed_dim = 16
+    p_args.edge_hidden_size = [20, 20]
+    p_args.node_hidden_size = [20, 20]
     p_args.reward_coeff = 10.
     agent_args.p_args = p_args
 
     v_args = Config()
     v_args.network = MLP
     v_args.activation = torch.nn.ReLU
-    v_args.sizes = [-1, 64, 64, 1]
+    v_args.sizes = [-1, 200, 200, 1]
     agent_args.v_args = v_args
 
     pi_args = Config()
     pi_args.network = MLP
     pi_args.activation = torch.nn.ReLU
-    pi_args.sizes = [-1, 64, 64, agent_args.action_space.n]
+    pi_args.sizes = [-1, 200, 200, agent_args.action_space.n]
     pi_args.squash = False
     agent_args.pi_args = pi_args
 

@@ -61,6 +61,7 @@ class CACCWrapper(gym.Wrapper):
             for i in range(self.hs_cur.shape[0]):
                 if collided[i]:
                     rewards[i] -= self.G
+        # print(rewards)
         return rewards
     
     def _comparable_reward(self):
@@ -95,6 +96,7 @@ class CACCWrapper(gym.Wrapper):
         done = np.array([done]*8, dtype=np.float32)
         self.state=state
         reward = (reward+self.bias)/self.std
+        # print(reward)
         return state, np.clip(reward, -5, 5), done, None
 
     def get_state(self):

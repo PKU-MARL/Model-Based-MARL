@@ -22,6 +22,14 @@ class RingAttenuationWrapper(WaveAttenuationEnv):
         self.n_a_ls = [1] * self.n_agent
         self.target_vel = 20.
 
+        self.action_mean = (self.action_space.high - self.action_space.low) / 2
+        self.action_bias = (self.action_space.high + self.action_space.low) / 2
+        self.state_mean = (self.observation_space.high - self.observation_space.low) / 2
+        self.state_bias = (self.observation_space.high + self.observation_space.low) / 2
+        
+        
+        #self.neighbor_mask = np.identity(self.n_agent)
+
     @property
     def action_space(self):
         """See class definition."""
@@ -57,12 +65,19 @@ class RingAttenuationWrapper(WaveAttenuationEnv):
 
     def get_state_(self):
         """See class definition."""
+
+        # for veh_id in self.sorted_ids:
+        #     print('speed=',self.k.network.max_speed())
+        #     print('po=',self.k.network.length())
+        
         speed = [self.k.vehicle.get_speed(veh_id) / self.k.network.max_speed()
                  for veh_id in self.sorted_ids]
         pos = [self.k.vehicle.get_x_by_id(veh_id) / self.k.network.length()
                for veh_id in self.sorted_ids]
         speed = np.array(speed).reshape((-1, 1))
         pos = np.array(pos).reshape((-1, 1))
+        # print('speed=',speed)
+        # print('position=',pos)
         return np.concatenate([speed, pos], axis=-1)
     
     def step(self, rl_actions):
@@ -71,6 +86,9 @@ class RingAttenuationWrapper(WaveAttenuationEnv):
                 rl_actions = rl_actions.squeeze(-1)
         _, _, d, info = super().step(rl_actions)
         s1 = self.get_state_()
+        # print('action=',rl_actions)        
+        # print('state=',s1)
+        
         r = self.get_reward_(rl_actions)
         d = np.array([d] * self.n_agent, dtype=np.bool)
         return s1, r, d, info
