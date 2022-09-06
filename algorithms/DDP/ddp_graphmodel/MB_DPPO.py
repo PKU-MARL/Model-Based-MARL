@@ -29,7 +29,6 @@ from torch.nn.parallel import DistributedDataParallel
 from torch.utils.data.distributed import DistributedSampler
 from torch.utils.data import DataLoader
 
-
 class Dataset:
     def __init__(self, model_buffer, samples_num, batch_size, length):
         self.model_buffer = model_buffer
@@ -64,8 +63,6 @@ class Dataset:
         torch.save(self.data, '/home/mcd1619/MB-MARL/algorithms/mbdppo/data.pt')
         # print('aa=',self.data.)
         # return
-
-
 
 class MultiCollect:
     def __init__(self, adjacency, device='cuda'):
@@ -313,37 +310,14 @@ class OnPolicyRunner:
 
 
             trajs = self.rollout_env()  #  TO cheak: rollout n_step, maybe multi trajs
-           
-            
-           
-            
+       
 #---------------------------------------------------------------------------------------              
             t1=time.time()            
             if self.model_based:
                 self.model_buffer.storeTrajs(trajs)
                 self.updateModel()
             t2=time.time()
-            print('t=',t2-t1)
-
-#---------------------------------------------------------------------------------------                
-            # if self.model_based:
-            #     self.model_buffer.storeTrajs(trajs)
-            #     if iter % 200 == 0:
-            #         self.updateModel()     
-#---------------------------------------------------------------------------------------                       
-            # t1=time.time()
-            # if self.model_based:
-            #     self.model_buffer.storeTrajs(trajs)                  
-            #     # p=multiprocessing.Pool(100)
-            #     p=mp.Pool(100)
-            #     # b = p.map_async(self.updateModel(), self.nn)
-            #     p.apply_async(self.updateModel(), args=self.nn)
-
-            #     p.close()
-            #     p.join()
-            # t2=time.time()
-            # print('t=',t2-t1)
-#---------------------------------------------------------------------------------------                   
+            print('t=',t2-t1)              
                 
             agentInfo = []
             real_trajs = trajs
@@ -384,11 +358,7 @@ class OnPolicyRunner:
             while not(d.any() or (ep_len == length)):
                 s = env.get_state_() # dim = 2 or 3 (vectorized)
                 s = torch.as_tensor(s, dtype=torch.float, device=self.device)
-                a = self.agent.act(s).sample() # a is a tensor
-                # print('a=,',a)
-    #-----------------------------------------------                
-                # a = a.tanh()
-    #-----------------------------------------------                
+                a = self.agent.act(s).sample() # a is a tensor            
                 a = a.detach().cpu().numpy() # might not be squeezed at the last dimension. env should deal with this though.
                 # print(s)
                 s1, r, d, _ = env.step(a)
@@ -440,9 +410,6 @@ class OnPolicyRunner:
             a = dist.sample()
 
             logp = dist.log_prob(a)
-   #-----------------------------------------------         
-            # a = a.tanh()
-   #-----------------------------------------------  
             a = a.detach().cpu().numpy()
             s1, r, d, _ = env.step(a)
             traj.store(s, a, r, s1, d, logp)
@@ -500,11 +467,6 @@ class OnPolicyRunner:
         trajs = trajs.retrieve()
         self.logger.log(model_rollout_time=time.time()-time_t)
         return trajs
-    
-#-------------------------------------------------------------------------------------------------
-#-------------------------------------------------------------------------------------------------
-
-
     def updateModel(self, n=0):
         if n <= 0:
             n = self.n_model_update
@@ -520,634 +482,11 @@ class OnPolicyRunner:
         #         break
         # self.logger.log(model_update = i_model_update + 1)
         self.logger.log(model_update = n + 1)
-
-#----------------------------------------------------------------------------------------------
-    
+#----------------------------------------------------------------------------------------------    
     def testModel(self, n = 0):
         trajs = self.model_buffer.sampleTrajs(self.model_batch_size)
         trajs = [traj.getFraction(length=self.model_update_length) for traj in trajs]
         return self.agent.validateModel(trajs, length=self.model_update_length)
-    
-    
-
-    
-
-class IA2C(nn.ModuleList):
-    def __init__(self, logger, device, agent_args, **kwargs):
-        super().__init__()
-        self.logger = logger
-        self.device = device
-        self.n_agent = agent_args.n_agent
-        self.gamma = agent_args.gamma
-        self.lamda = agent_args.lamda
-        self.clip = agent_args.clip
-        self.target_kl = agent_args.target_kl
-        self.v_coeff = agent_args.v_coeff
-        self.v_thres = agent_args.v_thres
-        self.entropy_coeff = agent_args.entropy_coeff
-        self.entropy_coeff_decay = agent_args.entropy_coeff_decay  # only in IA2C
-        self.lr = agent_args.lr
-        self.lr_v = agent_args.lr_v
-        self.n_update_v = agent_args.n_update_v
-        self.n_update_pi = agent_args.n_update_pi
-        self.n_minibatch = agent_args.n_minibatch
-        self.use_reduced_v = agent_args.use_reduced_v
-        self.use_rtg = agent_args.use_rtg
-        self.use_gae_returns = agent_args.use_gae_returns
-
-        self.advantage_norm = agent_args.advantage_norm
-
-        self.observation_dim = agent_args.observation_dim
-        self.action_space = agent_args.action_space
-        self.discrete = isinstance(agent_args.action_space, Discrete)
-        if self.discrete:
-            self.action_dim = self.action_space.n
-            self.action_shape = self.action_dim
-        else:
-            self.action_shape = self.action_space.shape
-            # self.action_dim = 1
-            # for j in self.action_shape:
-            #     self.action_dim *= j
-            self.action_dim = self.action_space.shape[0]
-            self.action_low = self.action_space.low
-            self.action_high = self.action_space.high
-            self.squeeze = agent_args.squeeze
-
-        # if adj diag is not one, we should add a eye matrix
-        agent_args.adj = (torch.as_tensor(agent_args.adj, device=self.device, dtype=torch.float)>0) | torch.eye(self.n_agent, device=device).bool()
-        self.adj = torch.as_tensor(agent_args.adj, device=self.device, dtype=torch.float)
-        self.radius_v = agent_args.radius_v
-        self.radius_pi = agent_args.radius_pi
-        self.pi_args = agent_args.pi_args
-        self.v_args = agent_args.v_args
-        self.collect_pi, self.actors = self._init_actors()
-        self.collect_v, self.vs = self._init_vs()
-
-        self.optimizer_v = Adam(self.vs.parameters(), lr=self.lr_v)
-        self.optimizer_pi = Adam(self.actors.parameters(), lr=self.lr)
-
-    def get_logp(self, s, a):
-        """
-        Requires input of [batch_size, n_agent, dim] or [n_agent, dim].
-        Returns a tensor whose dim() == 3.
-        """
-        s = torch.as_tensor(s, dtype=torch.float32, device=self.device)
-        # print('dim is',s)
-        dim = s.dim()
-        # print('dim is',dim)
-        while s.dim() <= 2:
-            s = s.unsqueeze(0)
-            a = a.unsqueeze(0)
-        while a.dim() < s.dim():
-            a = a.unsqueeze(-1)
-        s = self.collect_pi.gather(s)
-        # Now s[i].dim() == 2, a.dim() == 3
-        log_prob = []
-        for i in range(self.n_agent):
-            if self.discrete:
-                probs = self.actors[i](s[i])
-                log_prob.append(torch.log(torch.gather(probs, dim=-1, index=torch.select(a, dim=1, index=i).long())))
-            else:
-                log_prob.append(self.actors[i](s[i], a.select(dim=1, index=i)))
-        log_prob = torch.stack(log_prob, dim=1)
-        while log_prob.dim() < 3:
-            log_prob = log_prob.unsqueeze(-1)
-        return log_prob
-
-    def act(self, s, requires_log=False):
-        """
-        Requires input of [batch_size, n_agent, dim] or [n_agent, dim].
-        This method is gradient-free. To get the gradient-enabled probability information, use get_logp().
-        Returns a distribution with the same dimensions of input.
-        """
-        with torch.no_grad():
-            dim = s.dim()
-            while s.dim() <= 2:
-                s = s.unsqueeze(0)
-            s = s.to(self.device)
-            s = self.collect_pi.gather(s)  # all state into [ self +  ]
-            # Now s[i].dim() == 2 ([batch_size, dim])
-
-            if self.discrete:
-                probs = []
-                for i in range(self.n_agent):
-                    probs.append(self.actors[i](s[i]))
-                probs = torch.stack(probs, dim=1)
-                return Categorical(probs)
-            else:
-                means, stds = [], []
-                for i in range(self.n_agent):
-                    mean, std = self.actors[i](s[i])
-                    means.append(mean)
-                    stds.append(std)
-                means = torch.stack(means, dim=1)
-                stds = torch.stack(stds, dim=1)
-                while means.dim() > dim:
-                    means = means.squeeze(0)
-                    stds = stds.squeeze(0)
-                return Normal(means, stds)
-
-
-    def _process_traj(self, s, a, r, s1, d, logp):
-        """
-        Input are all in shape [batch_size, T, n_agent, dim]
-        """
-        with torch.no_grad():
-            b, T, n, dim_s = s.shape
-            s, a, r, s1, d, logp = [item.to(self.device) for item in [s, a, r, s1, d, logp]]
-            value = self._evalV(s.view(-1, n, dim_s)).view(b, T, n, -1)
-
-            returns = torch.zeros(value.size(), device=self.device)
-            deltas, advantages = torch.zeros_like(returns), torch.zeros_like(returns)
-            prev_value = self._evalV(s1.select(1, T - 1))
-            if not self.use_rtg:
-                prev_return = prev_value
-            else:
-                prev_return = torch.zeros_like(prev_value)
-            prev_advantage = torch.zeros_like(prev_return)
-            d_mask = d.float()
-            for t in reversed(range(T)):
-                deltas[:, t, :, :]= r.select(1, t) + self.gamma * (1-d_mask.select(1,t)) * prev_value - value.select(1, t).detach()
-                advantages[:, t, :, :] = deltas.select(1, t) + self.gamma * self.lamda * (1-d_mask.select(1,t)) * prev_advantage
-                if self.use_gae_returns:
-                    returns[:, t, :, :] = value.select(1, t).detach() + advantages.select(1, t)
-                else:
-                    returns[:, t, :, :] = r.select(1, t) + self.gamma * (1-d_mask.select(1, t)) * prev_return
-
-                prev_return = returns.select(1, t)
-                prev_value = value.select(1, t)
-                prev_advantage = advantages.select(1, t)
-            reduced_advantages = self.collect_v.reduce_sum(advantages.view(-1, n, 1)).view(advantages.size())
-            if self.advantage_norm and reduced_advantages.size()[1] > 1:
-                reduced_advantages = (reduced_advantages - reduced_advantages.mean(dim=1, keepdim=True)) / (reduced_advantages.std(dim=1, keepdim=True) + 1e-5)
-                advantages = (advantages - advantages.mean(dim=1, keepdim=True)) / (advantages.std(dim=1, keepdim=True) + 1e-5)
-        return value, returns, advantages, reduced_advantages
-
-    def load(self):
-        # set  run_args.init_checkpoint  = None
-        pass
-
-    def checkConverged(self, ls_info):
-        #TODO: not neccessary
-        return False
-
-    def save(self, info=None):
-        self.logger.save(self, info=info)
-
-    def _evalV(self, s):
-        # Requires input in shape [-1, n_agent, dim]
-        s = s.to(self.device)
-        s = self.collect_v.gather(s)
-        values = []
-        for i in range(self.n_agent):
-            values.append(self.vs[i](s[i]))
-        return torch.stack(values, dim=1)
-
-    def _init_actors(self):
-        collect_pi = MultiCollect(torch.matrix_power(self.adj, self.radius_pi), device=self.device)
-        actors = nn.ModuleList()
-        for i in range(self.n_agent):
-            self.pi_args.sizes[0] = collect_pi.degree[i] * self.observation_dim
-            if self.discrete:
-                actors.append(CategoricalActor(**self.pi_args._toDict()))
-            else:
-                actors.append(GaussianActor(action_dim=self.action_dim, **self.pi_args._toDict()))
-        return collect_pi, actors
-
-    def _init_vs(self):
-        collect_v = MultiCollect(torch.matrix_power(self.adj, self.radius_v), device=self.device)
-        vs = nn.ModuleList()
-        for i in range(self.n_agent):
-            self.v_args.sizes[0] = collect_v.degree[i] * self.observation_dim
-            v_fn = self.v_args.network
-            vs.append(v_fn(**self.v_args._toDict()))
-        return collect_v, vs
-
-    def updateAgent(self, trajs, clip=None):
-        time_t = time.time()
-        if clip is None:
-            clip = self.clip
-        n_minibatch = self.n_minibatch
-
-        names = Trajectory.names()
-        traj_all = {name:[] for name in names}
-        max_traj_length = max([i.length for i in trajs])
-        for traj in trajs:
-            for name in names:
-                tensor_shape = traj[name].shape
-                full_part_shape = [max_traj_length - tensor_shape[0]] + list(tensor_shape[1:])
-                if name == 'd':
-                    traj_all[name].append(torch.cat([traj[name], torch.ones(full_part_shape, dtype=torch.bool)], dim = 0))
-                else:
-                    traj_all[name].append(torch.cat([traj[name], torch.zeros(full_part_shape, dtype=traj[name].dtype)], dim = 0))
-        # should be 4-dim [batch * step * n_agent * dim]
-        traj = {name:torch.stack(value, dim=0) for name, value in traj_all.items()}
-
-
-        s, a, r, s1, d, logp = traj['s'], traj['a'], traj['r'], traj['s1'], traj['d'], traj['logp']
-        s, a, r, s1, d, logp = [item.to(self.device) for item in [s, a, r, s1, d, logp]]
-        # all in shape [batch_size, T, n_agent, dim]
-        value_old, returns, advantages, reduced_advantages = self._process_traj(**traj)
-
-        advantages_old = reduced_advantages if self.use_reduced_v else advantages #  set use_reduced_v as False
-
-        b, T, n, d_s = s.size()
-        d_a = a.size()[-1]
-        s = s.view(-1, n, d_s)
-        a = a.view(-1, n, d_a)
-        logp = logp.view(-1, n, d_a)
-        advantages_old = advantages_old.view(-1, n, 1)
-        returns = returns.view(-1, n, 1)
-        value_old = value_old.view(-1, n, 1)
-        # s, a, logp, adv, ret, v are now all in shape [-1, n_agent, dim]
-
-        batch_total = logp.size()[0]
-        batch_size = int(batch_total/n_minibatch)
-
-        # critic update
-        for i_v in range(self.n_update_v):
-            batch_returns = returns
-            batch_state = s
-            if n_minibatch > 1:
-                idxs = np.random.randint(0, len(batch_total), size=batch_size)
-                [batch_returns, batch_state] = [item[idxs] for item in [batch_returns, batch_state]]
-            batch_v_new = self._evalV(batch_state)
-            loss_v = ((batch_v_new - batch_returns) ** 2).mean()
-            self.optimizer_v.zero_grad()
-            loss_v.backward()
-            self.optimizer_v.step()
-            var_v = ((batch_returns - batch_returns.mean()) ** 2).mean()
-            rel_v_loss = loss_v / (var_v + 1e-8)
-            self.logger.log(v_loss=loss_v, v_update=None, v_var=var_v, rel_v_loss=rel_v_loss)
-            if rel_v_loss < self.v_thres:
-                break
-        self.logger.log(v_update_step=i_v)
-
-
-        # use the updated value
-        _, _, advantages, _ = self._process_traj(**traj)
-        advantages_old = reduced_advantages if self.use_reduced_v else advantages  # set use_reduced_v as False
-        advantages_old = advantages_old.view(-1, n, 1)
-
-
-        # actor update
-        i_pi = 0
-        for i_pi in range(self.n_update_pi):
-            batch_state, batch_action, batch_logp, batch_advantages_old = [s, a, logp, advantages_old]
-            if n_minibatch > 1:
-                idxs = np.random.choice(range(batch_total), size=batch_size, replace=False)
-                [batch_state, batch_action, batch_logp, batch_advantages_old] = [item[idxs] for item in [batch_state, batch_action, batch_logp, batch_advantages_old]]
-            batch_logp_new = self.get_logp(batch_state, batch_action)
-
-            # - A * logp - entropy_loss
-            loss_pi =  torch.mean(- batch_advantages_old * batch_logp_new)
-            loss_entropy = - torch.mean(batch_logp_new)
-            updata_entropy_coff = max(self.entropy_coeff - self.entropy_coeff_decay * self.logger.buffer['interaction'], 0)
-            loss_actor = loss_pi + loss_entropy * updata_entropy_coff
-            self.optimizer_pi.zero_grad()
-            loss_actor.backward()
-            self.optimizer_pi.step()
-            logp_diff = torch.exp(batch_logp_new) * (batch_logp_new - self.get_logp(batch_state, batch_action) )
-            kl = logp_diff.mean()
-            self.logger.log(pi_loss=loss_pi, entropy=loss_entropy, kl_divergence = kl, entropy_coff=updata_entropy_coff ,pi_update=None)
-        self.logger.log(pi_update_step=i_pi)
-
-
-        self.logger.log(update=None, reward=r, value=value_old, clip=clip, returns=returns, advantages=advantages_old.abs())
-        self.logger.log(agent_update_time=time.time()-time_t)
-        return [r.mean().item(), loss_entropy.item()]
-
-
-class IC3Net(nn.ModuleList):
-    def __init__(self, logger, device, agent_args, **kwargs):
-        super().__init__()
-        self.logger = logger
-        self.device = device
-        self.n_agent = agent_args.n_agent
-        self.gamma = agent_args.gamma
-        self.lamda = agent_args.lamda
-        self.clip = agent_args.clip
-        self.target_kl = agent_args.target_kl
-        self.v_coeff = agent_args.v_coeff
-        self.v_thres = agent_args.v_thres
-        self.entropy_coeff = agent_args.entropy_coeff
-        self.entropy_coeff_decay =  agent_args.entropy_coeff_decay  # add
-        self.lr = agent_args.lr
-        self.lr_v = agent_args.lr_v
-        self.lr_p = agent_args.lr_p
-        self.n_update_v = agent_args.n_update_v
-        self.n_update_pi = agent_args.n_update_pi
-        self.n_minibatch = agent_args.n_minibatch
-        self.use_reduced_v = agent_args.use_reduced_v
-        self.use_rtg = agent_args.use_rtg
-        self.use_gae_returns = agent_args.use_gae_returns
-        self.all_comm = True # TODO: need to update
-
-        self.advantage_norm = agent_args.advantage_norm
-
-        self.observation_dim = agent_args.observation_dim
-        self.action_space = agent_args.action_space
-        self.discrete = isinstance(agent_args.action_space, Discrete)
-        if self.discrete:
-            self.action_dim = self.action_space.n
-            self.action_shape = self.action_dim
-        else:
-            self.action_shape = self.action_space.shape
-            # self.action_dim = 1
-            # for j in self.action_shape:
-            #     self.action_dim *= j
-            self.action_dim = self.action_space.shape[0]
-            self.action_low = self.action_space.low
-            self.action_high = self.action_space.high
-            self.squeeze = agent_args.squeeze
-        # if adj diag is not one, we should add a eye matrix
-        agent_args.adj = (torch.as_tensor(agent_args.adj, device=self.device, dtype=torch.float) > 0) | torch.eye(
-            self.n_agent, device=device).bool()
-        self.adj = torch.as_tensor(agent_args.adj, device=self.device, dtype=torch.float)
-        self.radius_v = agent_args.radius_v
-        self.radius_pi = agent_args.radius_pi
-        self.pi_args = agent_args.pi_args
-        self.v_args = agent_args.v_args
-        #self.collect_pi, self.actors = self._init_actors()
-        #self.collect_v, self.vs = self._init_vs()
-        self.hidden_dim = agent_args.v_args.hidden_dim
-
-
-        self.initNetwork(agent_args)
-        self.optimizer = Adam(list(self.obs_encoder.parameters())+list(self.comm_gate_head.parameters())+ list(self.message_models.parameters())+list(self.main_models.parameters())+list(self.value_heads.parameters())+list(self.actors.parameters()), lr=self.lr)
-        #self.optimizer_pi = Adam(self.actors.parameters(), lr=self.lr)
-
-    def initNetwork(self, agent_args):
-        # [one for all]observation encoding layer
-        self.obs_encoder = nn.Linear(self.observation_dim, self.hidden_dim)
-
-        # [1 v 1] communication gated action layer, first dim for comm, second dim for not
-        self.comm_gate_head = nn.ModuleList([nn.Linear(self.hidden_dim, 2) for i in range(self.n_agent)])
-
-        # [1 v 1] message fussion layer
-        self.message_models = nn.ModuleList([nn.Linear(self.hidden_dim, self.hidden_dim) for i in range(self.n_agent)])
-
-        # [1 v 1] main layer
-        self.main_models = nn.ModuleList([nn.Linear(self.hidden_dim, self.hidden_dim) for i in range(self.n_agent)])
-
-        # value head
-        self.value_heads = nn.ModuleList([nn.Linear(self.hidden_dim, 1) for i in range(self.n_agent)])
-
-        # action head
-        if self.discrete:
-            self.pi_args.sizes[0] = self.hidden_dim
-            self.actors = nn.ModuleList([CategoricalActor(**self.pi_args._toDict()).to(self.device) for i in range(self.n_agent)])
-        else:
-            self.pi_args.sizes[0] = self.hidden_dim
-            self.actors = nn.ModuleList([GaussianActor(action_dim=self.action_dim, **self.pi_args._toDict()).to(self.device) for i in range(self.n_agent)])
-
-        # activation function
-        self.activation_function = torch.nn.ReLU(inplace=True) #TODO: add to config file
-
-
-    def updateAgent(self, trajs, clip=None):
-        time_t = time.time()
-        if clip is None:
-            clip = self.clip
-        n_minibatch = self.n_minibatch
-
-        names = Trajectory.names()
-        traj_all = {name: [] for name in names}
-        max_traj_length = max([i.length for i in trajs])
-        for traj in trajs:
-            for name in names:
-                tensor_shape = traj[name].shape
-                full_part_shape = [max_traj_length - tensor_shape[0]] + list(tensor_shape[1:])
-                if name == 'd':
-                    traj_all[name].append(torch.cat([traj[name], torch.ones(full_part_shape, dtype=torch.bool)], dim=0))
-                else:
-                    traj_all[name].append(
-                        torch.cat([traj[name], torch.zeros(full_part_shape, dtype=traj[name].dtype)], dim=0))
-        # should be 4-dim [batch * step * n_agent * dim]
-        traj = {name: torch.stack(value, dim=0) for name, value in traj_all.items()}
-
-        s, a, r, s1, d, logp = traj['s'], traj['a'], traj['r'], traj['s1'], traj['d'], traj['logp']
-        s, a, r, s1, d, logp = [item.to(self.device) for item in [s, a, r, s1, d, logp]]
-        # all in shape [batch_size, T, n_agent, dim]
-        value_old, returns, advantages, reduced_advantages = self._process_traj(**traj)
-
-        advantages_old = reduced_advantages if self.use_reduced_v else advantages  # set use_reduced_v as False
-
-        b, T, n, d_s = s.size()
-        d_a = a.size()[-1]
-        s = s.view(-1, n, d_s)
-        a = a.view(-1, n, d_a)
-        logp = logp.view(-1, n, d_a)
-        advantages_old = advantages_old.view(-1, n, 1)
-        returns = returns.view(-1, n, 1)
-        value_old = value_old.view(-1, n, 1)
-        # s, a, logp, adv, ret, v are now all in shape [-1, n_agent, dim]
-
-        batch_total = logp.size()[0]
-        batch_size = int(batch_total / n_minibatch)
-
-        # critic loss
-        batch_returns = returns
-        batch_state = s
-        if n_minibatch > 1:
-            idxs = np.random.randint(0, len(batch_total), size=batch_size)
-            [batch_returns, batch_state] = [item[idxs] for item in [batch_returns, batch_state]]
-        batch_v_new = self._evalV(batch_state)
-        loss_v = ((batch_v_new - batch_returns) ** 2).mean()
-        var_v = ((batch_returns - batch_returns.mean()) ** 2).mean()
-        rel_v_loss = loss_v / (var_v + 1e-8)
-        self.logger.log(v_loss=loss_v, v_update=None, v_var=var_v, rel_v_loss=rel_v_loss)
-        # if rel_v_loss < self.v_thres:
-        #     break
-        self.logger.log(v_update_step=1)
-
-        # actor loss
-        batch_state, batch_action, batch_logp, batch_advantages_old = [s, a, logp, advantages_old]
-        if n_minibatch > 1:
-            idxs = np.random.choice(range(batch_total), size=batch_size, replace=False)
-            [batch_state, batch_action, batch_logp, batch_advantages_old] = [item[idxs] for item in
-                                                                             [batch_state, batch_action, batch_logp,
-                                                                              batch_advantages_old]]
-        batch_logp_new = self.get_logp(batch_state, batch_action)
-
-        # - A * logp - entropy_loss
-        loss_pi = torch.mean(- batch_advantages_old * batch_logp_new)
-        loss_entropy = - torch.mean(batch_logp_new)
-        updata_entropy_coff = max(self.entropy_coeff - self.entropy_coeff_decay * self.logger.buffer['interaction'],
-                                  0)
-        loss_actor = loss_pi + loss_entropy * updata_entropy_coff
-
-        loss = self.lr_v * loss_v + self.lr_p * loss_actor
-
-        self.optimizer.zero_grad()
-        loss.backward()
-        self.optimizer.step()
-
-        logp_diff = torch.exp(batch_logp_new) * (batch_logp_new - self.get_logp(batch_state, batch_action))
-        kl = logp_diff.mean()
-        self.logger.log(pi_loss=loss_pi, entropy=loss_entropy, kl_divergence=kl, entropy_coff=updata_entropy_coff,
-                        pi_update=None)
-        self.logger.log(pi_update_step=1)
-
-    def checkConverged(self, ls_info):
-        #TODO: not neccessary
-        return False
-
-    def group_inference(self, model, data):
-        # model is a modelList
-        # data is a [batch * n_agent *dim]
-        outs = []
-        for i in range(self.n_agent):
-            agent_data = data.select(1, i)
-            outs.append(model[i](agent_data))
-        outs = torch.stack(outs, dim=1)
-        return outs
-
-    def inference_hidden_state(self, s):
-        # encode the state
-        s_encoding = self.activation_function(self.obs_encoder(s))
-
-        # decide which agent to communication
-        # [batch_size, n_agent, 2]
-        comm_gate_distirbution = self.group_inference(self.comm_gate_head, s_encoding)
-
-
-        # merge the message by mean
-        if self.all_comm == True:
-            batch_comm_adj = self.adj.unsqueeze(0).repeat(s.shape[0], 1, 1)
-        else:
-            # TODO: check if need detach
-            comm_gate = torch.stack(
-                [torch.stack([torch.multinomial(dis, 1).detach() for dis in n_dis]) for n_dis in
-                 comm_gate_distirbution])
-            comm_gate_tensor = comm_gate.unsqueeze(2).repeat(1, 1, self.n_agent)
-            comm_gate_tensor_T = comm_gate_tensor.permute(0, 2, 1)
-            comm_gate = comm_gate_tensor * comm_gate_tensor_T
-            batch_comm_adj = self.adj.unsqueeze(0).repeat(comm_gate.shape[0], 1, 1) | comm_gate
-
-        batch_message_ls = []
-        for i in range(s.shape[0]):
-            # for each batch
-            comm_adj = batch_comm_adj.select(0, i)
-            single_s_encoding = s_encoding.select(0, i)
-
-            batch_message_ls.append(torch.mm(comm_adj, single_s_encoding))
-        batch_message = torch.stack(batch_message_ls, dim=0)
-
-        # deal with the meassage
-        deal_message = self.group_inference(self.message_models, batch_message)
-
-        # genarate hidden state
-        hidden_state = s_encoding + self.group_inference(self.main_models, s_encoding) + deal_message
-        return hidden_state
-
-    def save(self, info=None):
-        self.logger.save(self, info=info)
-
-
-    def act(self, s, requires_log=False):
-        """
-                Requires input of [batch_size, n_agent, dim] or [n_agent, dim].
-                This method is gradient-free. To get the gradient-enabled probability information, use get_logp().
-                Returns a distribution with the same dimensions of input.
-                """
-        with torch.no_grad():
-            dim = s.dim()
-            while s.dim() <= 2:
-                s = s.unsqueeze(0)
-            s = s.to(self.device)
-
-            hidden_state = self.inference_hidden_state(s)
-            hidden_state =  hidden_state.permute(1, 0, 2) # Now s[i].dim() == 2 ([batch_size, dim])
-
-            # cal the action
-            if self.discrete:
-                probs = []
-                for i in range(self.n_agent):
-                    probs.append(self.actors[i](hidden_state[i]))
-                probs = torch.stack(probs, dim=1)
-                return Categorical(probs)
-            else:
-                means, stds = [], []
-                for i in range(self.n_agent):
-                    mean, std = self.actors[i](hidden_state[i])
-                    means.append(mean)
-                    stds.append(std)
-                means = torch.stack(means, dim=1)
-                stds = torch.stack(stds, dim=1)
-                while means.dim() > dim:
-                    means = means.squeeze(0)
-                    stds = stds.squeeze(0)
-                return Normal(means, stds)
-
-    def get_logp(self, s, a):
-        s = torch.as_tensor(s, dtype=torch.float32, device=self.device)
-        dim = s.dim()
-        while s.dim() <= 2:
-            s = s.unsqueeze(0)
-            a = a.unsqueeze(0)
-        while a.dim() < s.dim():
-            a = a.unsqueeze(-1)
-
-        hidden_state = self.inference_hidden_state(s)
-        hidden_state = hidden_state.permute(1, 0, 2)  # Now s[i].dim() == 2 ([batch_size, dim])
-
-        log_prob = []
-        for i in range(self.n_agent):
-            if self.discrete:
-                probs = self.actors[i](hidden_state[i])
-                log_prob.append(torch.log(torch.gather(probs, dim=-1, index=torch.select(a, dim=1, index=i).long())))
-            else:
-                log_prob.append(self.actors[i](hidden_state[i], a.select(dim=1, index=i)))
-        log_prob = torch.stack(log_prob, dim=1)
-        while log_prob.dim() < 3:
-            log_prob = log_prob.unsqueeze(-1)
-        return log_prob
-
-    def _evalV(self, s):
-        # TODO：
-        # Requires input in shape [-1, n_agent, dim]
-        s = s.to(self.device)
-
-        hidden_state = self.inference_hidden_state(s)
-        hidden_state = hidden_state.permute(1, 0, 2)  # Now s[i].dim() == 2 ([batch_size, dim])
-
-        values = []
-        for i in range(self.n_agent):
-            values.append(self.value_heads[i](hidden_state[i]))
-        return torch.stack(values, dim=1)
-
-    def _process_traj(self, s, a, r, s1, d, logp):
-        """
-        Input are all in shape [batch_size, T, n_agent, dim]
-        """
-        with torch.no_grad():
-            b, T, n, dim_s = s.shape
-            s, a, r, s1, d, logp = [item.to(self.device) for item in [s, a, r, s1, d, logp]]
-            value = self._evalV(s.view(-1, n, dim_s)).view(b, T, n, -1)
-
-            returns = torch.zeros(value.size(), device=self.device)
-            deltas, advantages = torch.zeros_like(returns), torch.zeros_like(returns)
-            prev_value = self._evalV(s1.select(1, T - 1))
-            if not self.use_rtg:
-                prev_return = prev_value
-            else:
-                prev_return = torch.zeros_like(prev_value)
-            prev_advantage = torch.zeros_like(prev_return)
-            d_mask = d.float()
-            for t in reversed(range(T)):
-                deltas[:, t, :, :]= r.select(1, t) + self.gamma * (1-d_mask.select(1,t)) * prev_value - value.select(1, t).detach()
-                advantages[:, t, :, :] = deltas.select(1, t) + self.gamma * self.lamda * (1-d_mask.select(1,t)) * prev_advantage
-                if self.use_gae_returns:
-                    returns[:, t, :, :] = value.select(1, t).detach() + advantages.select(1, t)
-                else:
-                    returns[:, t, :, :] = r.select(1, t) + self.gamma * (1-d_mask.select(1, t)) * prev_return
-
-                prev_return = returns.select(1, t)
-                prev_value = value.select(1, t)
-                prev_advantage = advantages.select(1, t)
-
-        return value, returns, advantages, None
 
 class DPPOAgent(nn.ModuleList):
     """
@@ -1173,28 +512,14 @@ class DPPOAgent(nn.ModuleList):
         self.use_reduced_v = agent_args.use_reduced_v
         self.use_rtg = agent_args.use_rtg
         self.use_gae_returns = agent_args.use_gae_returns
-
         self.advantage_norm = agent_args.advantage_norm
-
         self.observation_dim = agent_args.observation_dim
         self.action_space = agent_args.action_space
         self.discrete = isinstance(agent_args.action_space, Discrete)
         
         if self.discrete:
             self.action_dim = self.action_space.n
-            self.action_shape = self.action_dim
-            
-            
-        # else:
-        #     self.action_shape = self.action_space.shape
-        #     self.action_dim = 1
-        #     for j in self.action_shape:
-        #         self.action_dim *= j
-        #     self.action_low = self.action_space.low.item()
-        #     self.action_high = self.action_space.high.item()
-        #     self.squeeze = agent_args.squeeze
-        
-            
+            self.action_shape = self.action_dim          
         else:
             self.action_shape = self.action_space.shape
             self.action_dim = self.action_space.shape[0]
@@ -1247,10 +572,8 @@ class DPPOAgent(nn.ModuleList):
                     
 
                     stds.append(std)
-                    # stds.append(std.exp())
-                    
-                    
-                    
+                    # stds.append(std.exp())                    
+                                 
                 means = torch.stack(means, dim=1)
                 stds = torch.stack(stds, dim=1)
                 while means.dim() > dim:
@@ -1310,24 +633,11 @@ class DPPOAgent(nn.ModuleList):
             s, a, r, s1, d, logp = [item.to(self.device) for item in [s, a, r, s1, d, logp]]
             # all in shape [batch_size, T, n_agent, dim]
             value_old, returns, advantages, reduced_advantages = self._process_traj(**traj)
-
             advantages_old = reduced_advantages if self.use_reduced_v else advantages
-
             b, T, n, d_s = s.size()
-
-            d_a = a.size()[-1]  
-
-            
+            d_a = a.size()[-1]             
             s = s.view(-1, n, d_s)
             a = a.view(-1, n, d_a)
-            
-            #-------------------------------------------------------------------------
-            # logp = np.squeeze(logp, axis=0)   #for uav_env：CPPO DPPO
-            # print('aaa=',d_a)
-            # print('sss=',d_s)
-            #-------------------------------------------------------------------------     
-            
-            
             logp = logp.view(-1, n, d_a)    
 
             advantages_old = advantages_old.view(-1, n, 1)
@@ -1398,8 +708,7 @@ class DPPOAgent(nn.ModuleList):
         self.logger.save(self, info=info)
 
     def load(self, state_dict):
-        self.load_state_dict(state_dict[self.logger.prefix])
-        
+        self.load_state_dict(state_dict[self.logger.prefix])        
 #_____________________________________________________________________________________________________--
 
     def save_nets(self, dir_name,episode):
@@ -1413,11 +722,6 @@ class DPPOAgent(nn.ModuleList):
     def load_nets(self, dir_name,episode):
         
         self.actors.load_state_dict(torch.load(dir_name + '/Models/' + str(episode)+ 'best_actor.pt'))
-
-
-        # print('RL load successfully')
-#_____________________________________________________________________________________________________--
-        
 
     def _evalV(self, s):
         # Requires input in shape [-1, n_agent, dim]
@@ -1495,7 +799,6 @@ class ModelBasedAgent(nn.ModuleList):
         self.ps = GraphConvolutionalModel(self.logger, self.adj, self.observation_dim, self.action_dim, self.n_agent, self.p_args).to(self.device)
         # self.optimizer_p = Adam(self.ps.parameters(), lr=self.lr)
 
-
     def updateModel(self, length=1):
         """
         Input dim: 
@@ -1506,8 +809,6 @@ class ModelBasedAgent(nn.ModuleList):
         loss_total = 0.
                 
         #需要传入的数据 data,length, self.logger, self.adj, self.observation_dim, self.action_dim, self.n_agent, self.p_args, data
-
-
 
         import subprocess
         completed = subprocess.run(['/home/mcd1619/MB-MARL/algorithms/mbdppo/train.sh'])   
@@ -1545,9 +846,6 @@ class ModelBasedAgent(nn.ModuleList):
         model.load_state_dict(new_state_dict,False)
         return model    
 
-
-
-    
     def validateModel(self, trajs, length=1):
         with torch.no_grad():
             ss, actions, rs, s1s, ds = [], [], [], [], []
@@ -1578,20 +876,13 @@ class ModelBasedAgent(nn.ModuleList):
             while a.dim() <= 2:
                 a = a.unsqueeze(-1)
             s = s.to(self.device)
-            a = a.to(self.device)
-    #---------------------------------------------------------------------------------        
-            # rs, s1s, ds = self.ps.predict(s, (0.2*a).tanh())     # for UAV
-   #---------------------------------------------------------------------------------           
+            a = a.to(self.device)        
             rs, s1s, ds = self.ps.predict(s, a)
             return rs.detach(), s1s.detach(), ds.detach(), s.detach()
     
     def load_model(self, pretrained_model):
         dic = torch.load(pretrained_model)
         self.load_state_dict(dic[''])
-
-
-
-    
 
 class MB_DPPOAgent(ModelBasedAgent, DPPOAgent):
     def __init__(self, logger, device, agent_args, **kwargs):
@@ -1608,70 +899,4 @@ class MB_DPPOAgent(ModelBasedAgent, DPPOAgent):
             kls = [kl > 1.5 * self.target_kl for kl in kls]
             kl_exceeded = any(kls)
         return kl_exceeded or r_converged and entropy_converged
-
-
-# class HiddenAgent(ModelBasedAgent):
-#     def __init__(self, logger, device, agent_args, **kwargs):
-#         super().__init__(logger, device, agent_args, **kwargs)
-#         self.hidden_state_dim = agent_args.hidden_state_dim
-#         self.embedding_sizes = agent_args.embedding_sizes
-#         self.embedding_layers = self._init_embedding_layers()
-#         self.optimizer_p.add_param_group({'params': self.embedding_layers.parameters()})
-    
-#     def act(self, s, requires_log=False):
-#         s = s.detach()
-#         if s.size()[-1] != self.hidden_state_dim:
-#             s = self._state_embedding(s).detach()
-#         return super().act(s, requires_log)
-    
-#     def get_logp(self, s, a):
-#         s = s.detach()
-#         if s.size()[-1] != self.hidden_state_dim:
-#             s = self._state_embedding(s).detach()
-#         return super().get_logp(s, a)
-    
-#     def updateModel(self, s, a, r, s1, d):
-#         if s.size()[-1] != self.hidden_state_dim:
-#             s = self._state_embedding(s)
-#         if s1.size()[-1] != self.hidden_state_dim:
-#             s1 = self._state_embedding(s1)
-#         return super().updateModel(s, a, r, s1, d)
-    
-#     def model_step(self, s, a):
-#         if s.size()[-1] != self.hidden_state_dim:
-#             s = self._state_embedding(s)
-#         return super().model_step(s, a)
-
-#     def _init_embedding_layers(self):
-#         embedding_layers = nn.ModuleList()
-#         for _ in range(self.n_agent):
-#             embedding_layers.append(MLP(self.embedding_sizes, activation=nn.ReLU))
-#         return embedding_layers.to(self.device)
-    
-#     def _state_embedding(self, s):
-#         embeddings = []
-#         for i in range(self.n_agent):
-#             embeddings.append(self.embedding_layers[i](s.select(dim=-2, index=i).to(self.device)))
-#         embeddings = torch.stack(embeddings, dim=-2)
-#         return embeddings
-
-
-
-
-
-# class MB_DPPOAgent_Hidden(HiddenAgent, MB_DPPOAgent):
-#     def __init__(self, logger, device, agent_args, **kwargs):
-#         super().__init__(logger, device, agent_args, **kwargs)
-    
-#     def checkConverged(self, ls_info):
-#         rs = [info[0] for info in ls_info]
-#         r_converged = len(rs) > 8 and np.mean(rs[-3:]) < np.mean(rs[:-5])
-#         entropies = [info[1] for info in ls_info]
-#         entropy_converged = len(entropies) > 8 and np.abs(np.mean(entropies[-3:]) / np.mean(entropies[:-5]) - 1) < 1e-2
-#         kls = [info[2] for info in ls_info]
-#         kl_exceeded = False
-#         if self.target_kl is not None:
-#             kls = [kl > 1.5 * self.target_kl for kl in kls]
-#             kl_exceeded = any(kls)
-#         return kl_exceeded or r_converged and entropy_converged
 
