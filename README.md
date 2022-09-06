@@ -56,7 +56,7 @@ Train the agent by:
 ```python
 python launcher.py --env ENV --algo ALGO --name NAME --para PARA
 ```
-`ENV` specifies which environment to run in, including `eight`, `ring`, `catchup`， `slowdown`, `Grid`, `Monaco`.
+`ENV` specifies which environment to run in, including `eight`, `ring`, `catchup`, `slowdown`, `Grid`, `Monaco`.
 
 `ALGO` specifies the algorithm to use, including `IC3Net`, `CPPO`, `DPPO`, `DMPO`.
 
