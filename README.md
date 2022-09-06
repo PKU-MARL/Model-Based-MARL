@@ -101,3 +101,13 @@ This is a 5×5 formation grid of UAV swarm. The objective of UAVFC is to reach t
 ### Execution results of DMPO(Our method) and CPPO(Centralized PPO) in UAVFC
 https://user-images.githubusercontent.com/100258046/176517489-0ec8aed1-7232-41a1-8c3f-5047225237db.mp4
 
+# Cite
+Please cite our paper if you use the code or datasets in your own work:
+```
+@article{du2022fully,
+  title={Fully Decentralized Model-based Policy Optimization for Networked Systems},
+  author={Du, Yali and Ma, Chengdong and Liu, Yuchen and Lin, Runji and Dong, Hao and Wang, Jun and Yang, Yaodong},
+  journal={arXiv preprint arXiv:2207.06559},
+  year={2022}
+}
+```
