@@ -8,7 +8,7 @@ Code for the paper "Scalable Model-based Policy Optimization for Decentralized N
 1. DMPO (Our method)
 2. DPPO (Decentralized PPO)
 4. CPPO (Centralized PPO)
-5. IC3Net
+5. IC3Net (Individualized Controlled Continuous Communication Model)
     
 # Environments
 1. CACC Catchup
