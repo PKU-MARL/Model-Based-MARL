@@ -1,6 +1,6 @@
 
 # Decentralized Model-based Policy Optimization
-Official PyTorch implementation for the paper "Scalable Model-based Policy Optimization for Decentralized Networked Systems" in IROS 2022
+Official PyTorch implementation of the paper "Scalable Model-based Policy Optimization for Decentralized Networked Systems" in IROS 2022
 [arXiv](https://arxiv.org/abs/2207.06559)
 
 
