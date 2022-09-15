@@ -18,7 +18,8 @@ Official PyTorch implementation of the paper "Scalable Model-based Policy Optimi
 4. Figure Eight
 5. ATSC Grid
 6. ATSC Monaco
-7. UAVFC  (will be available soon)
+7. UAVFC (will be available soon)
+8. Custom Environments
 
 # Environment setup
 ## CACC, Flow and ATSC Environments
@@ -51,12 +52,18 @@ export PYTHONPATH="$SUMO_HOME/tools:$PYTHONPATH"
 in terminal to include the SUMO python packages.
 
 ## Custom Environments
-in terminal to in
+We support both discrete and continuous action spaces, similar to gym, in custom environment: 
+1.reset(): 
+Input: None
+Output: State → np.array((number of agent, dimension of state))
+2.step(): 
+Input: Action → np.array((number of agent, dimension of action))
+Output: State → np.array((number of agent, dimension of action)), Reward → np.array((number of agent,)), Done → np.array((number of agent,))
+3.You need to create a parameter file such as Catchup_CPPO.py in algorithms/config
 
 ## Logging data during training
 We uses WandB as logger. 
 1. Setting up WandB.
-
 Before running our code, you should log in to WandB locally. Please refer to https://docs.wandb.ai/quickstart for more detail.
 
 # Usage
@@ -64,7 +71,7 @@ Train the agent by:
 ```python
 python launcher.py --env ENV --algo ALGO --name NAME --para PARA
 ```
-`ENV` specifies which environment to run in, including `eight`, `ring`, `catchup`, `slowdown`, `Grid`, `Monaco`.
+`ENV` specifies which environment to run in, including `eight`, `ring`, `catchup`, `slowdown`, `Grid`, `Monaco`, `custom_env_name`.
 
 `ALGO` specifies the algorithm to use, including `IC3Net`, `CPPO`, `DPPO`, `DMPO`, `IA2C`.
 
