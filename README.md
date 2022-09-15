@@ -7,8 +7,9 @@ Official PyTorch implementation of the paper "Scalable Model-based Policy Optimi
 # Algorithms
 1. DMPO (Our method)
 2. DPPO (Decentralized PPO)
-4. CPPO (Centralized PPO)
-5. IC3Net (Individualized Controlled Continuous Communication Model)
+3. CPPO (Centralized PPO)
+4. IC3Net (Individualized Controlled Continuous Communication Model)
+5. IA2C (Independent Advantage Actor-Critic)
     
 # Environments
 1. CACC Catchup
@@ -20,6 +21,8 @@ Official PyTorch implementation of the paper "Scalable Model-based Policy Optimi
 7. UAVFC  (will be available soon)
 
 # Environment setup
+## CACC, Flow and ATSC Environments
+CACC, Flow and ATSC are developed based on Sumo, you need to install the corresponding version of sumo as follows:
 1. SUMO installation. Version 1.11.0
 
 The commit number of SUMO, available at https://github.com/eclipse/sumo used to run the results is 2147d155b1.
@@ -47,9 +50,14 @@ export PYTHONPATH="$SUMO_HOME/tools:$PYTHONPATH"
 ```
 in terminal to include the SUMO python packages.
 
-3. Setting up WandB.
+## Custom Environments
+in terminal to in
 
-Our code uses WandB as logger. Before running our code, you should log in to WandB locally. Please refer to https://docs.wandb.ai/quickstart for more detail.
+## Logging data during training
+We uses WandB as logger. 
+1. Setting up WandB.
+
+Before running our code, you should log in to WandB locally. Please refer to https://docs.wandb.ai/quickstart for more detail.
 
 # Usage
 Train the agent by:
@@ -58,7 +66,7 @@ python launcher.py --env ENV --algo ALGO --name NAME --para PARA
 ```
 `ENV` specifies which environment to run in, including `eight`, `ring`, `catchup`, `slowdown`, `Grid`, `Monaco`.
 
-`ALGO` specifies the algorithm to use, including `IC3Net`, `CPPO`, `DPPO`, `DMPO`.
+`ALGO` specifies the algorithm to use, including `IC3Net`, `CPPO`, `DPPO`, `DMPO`, `IA2C`.
 
 `NAME` is the additional name for the logger, which is set to `''` as default.
 
