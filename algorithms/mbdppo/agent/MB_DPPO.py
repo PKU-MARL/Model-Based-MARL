@@ -49,15 +49,10 @@ class ModelBasedAgent(nn.ModuleList):
         s: [[T, n_agent, state_dim]]
         a: [[T, n_agent, action_dim]]
         """
-        
-
-        
+             
         time_t = time.time()
         loss_total = 0.
         ss, actions, rs, s1s, ds = [], [], [], [], []
-        
-        
-        
         for traj in trajs:
             s, a, r, s1, d = traj["s"], traj["a"], traj["r"], traj["s1"], traj["d"]
             s, a, r, s1, d = [torch.as_tensor(item, device=self.device) for item in [s, a, r, s1, d]]          
@@ -67,7 +62,6 @@ class ModelBasedAgent(nn.ModuleList):
             s1s.append(s1)
             ds.append(d)  
             
-
         ss, actions, rs, s1s, ds = [torch.stack(item, dim=0) for item in [ss, actions, rs, s1s, ds]]
         loss, rel_state_error = self.ps.train(ss, actions, rs, s1s, ds, length) # [n_traj, T, n_agent, dim]
      
