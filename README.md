@@ -52,7 +52,7 @@ export PYTHONPATH="$SUMO_HOME/tools:$PYTHONPATH"
 in terminal to include the SUMO python packages.
 
 ## Custom Environments
-We support both discrete and continuous action spaces, similar to gym, in custom environment: 
+We support both discrete and continuous action spaces. Similar to gym, you need to write reset and step functions. For more details please see algorithms/envs/Custom_Env.py
 
 1. reset (): 
 ```
