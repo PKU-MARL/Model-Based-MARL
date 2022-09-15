@@ -5,8 +5,6 @@ Created on Tue Sep  6 02:04:27 2022
 @author: 86153
 """
 
-
-
 import time
 import os
 from numpy.core.numeric import indices
@@ -58,9 +56,7 @@ class DPPOAgent(nn.ModuleList):
         self.use_gae_returns = agent_args.use_gae_returns
         self.env_name = env_args.env
         self.algo_name = env_args.algo
-
         self.advantage_norm = agent_args.advantage_norm
-
         self.observation_dim = agent_args.observation_dim
         self.action_space = agent_args.action_space
         self.discrete = isinstance(agent_args.action_space, Discrete)       
@@ -77,8 +73,7 @@ class DPPOAgent(nn.ModuleList):
             else:               
                 self.action_dim = self.action_space.shape[0]
             self.squeeze = agent_args.squeeze
-            
-        
+                 
         self.adj = torch.as_tensor(agent_args.adj, device=self.device, dtype=torch.float)
         self.radius_v = agent_args.radius_v
         self.radius_pi = agent_args.radius_pi
@@ -189,24 +184,15 @@ class DPPOAgent(nn.ModuleList):
             advantages_old = reduced_advantages if self.use_reduced_v else advantages
 
             b, T, n, d_s = s.size()
-
             d_a = a.size()[-1]  
-
-            
             s = s.view(-1, n, d_s)
             a = a.view(-1, n, d_a)
-                
-            
-            
             logp = logp.view(-1, n, d_a)    
-
             advantages_old = advantages_old.view(-1, n, 1)
             returns = returns.view(-1, n, 1)
             value_old = value_old.view(-1, n, 1)
             # s, a, logp, adv, ret, v are now all in shape [-1, n_agent, dim]
-
             batch_total = logp.size()[0]
-
             batch_size = int(batch_total/n_minibatch)
 
 
@@ -278,12 +264,8 @@ class DPPOAgent(nn.ModuleList):
         # torch.save(self.actors.state_dict(), dir_name + '/' +str(episode)+ 'best_actor.pt')
         print('RL saved successfully')
 
-    def load_nets(self, dir_name,episode):
-        
+    def load_nets(self, dir_name,episode):       
         self.actors.load_state_dict(torch.load(dir_name + '/Models/' + str(episode)+ 'best_actor.pt'))
-
-
-        # print('RL load successfully')
 #_____________________________________________________________________________________________________--
         
 
