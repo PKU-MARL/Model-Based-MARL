@@ -86,11 +86,10 @@ class OnPolicyRunner:
             self.updateModel(self.n_model_update_warmup) # Sample trajectories, then shorten them.
 
         for iter in trange(self.n_iter):
-            # save model:
-            
             # if iter % self.test_interval == 0:
             if iter % 50 == 0:
                 mean_return = self.test(iter)
+                 # save model:
                 self.agent.save(info = mean_return)
                 
 
@@ -160,7 +159,6 @@ class OnPolicyRunner:
             else:                           
                 env.reset()     # for another env
                 
-            # env.reset()
             
             d, ep_ret, ep_len = np.array([False]), 0, 0
             while not(d.any() or (ep_len == length)):
@@ -180,7 +178,6 @@ class OnPolicyRunner:
                 elif self.env_name == 'Drones_new':
                     actions = a
                     self.n_agent = 5
-
                     s1, r, d, _ = env.step(state = State_total, action = actions)
 
                 else:    
@@ -234,8 +231,7 @@ class OnPolicyRunner:
             s = torch.as_tensor(s, dtype=torch.float, device=self.device)
             dist = self.agent.act(s)
             a = dist.sample()
-            logp = dist.log_prob(a)
-            
+            logp = dist.log_prob(a)         
             a = a.detach().cpu().numpy()
 
 
@@ -283,11 +279,9 @@ class OnPolicyRunner:
                     if self.episode_len == self.max_episode_len:
                         if self.model_based:
                             trajs += traj.retrieve()
-                            traj = TrajectoryBuffer(device=self.device)
+                            traj = TrajectoryBuffer(device=self.device)    
                             
-                    
-                elif self.env_name == 'slowdown':                    
-                    
+                elif self.env_name == 'slowdown':                                      
                     if d.any() or (self.episode_len == self.max_episode_len):      #for slowdown
                     # if self.episode_len == self.max_episode_len:    
                         self.logger.log(episode_reward=self.episode_reward.sum()/600, episode_len = self.episode_len, episode=None)
@@ -304,11 +298,9 @@ class OnPolicyRunner:
                             trajs += traj.retrieve()
                             traj = TrajectoryBuffer(device=self.device)
 #----------------------------------------------------------------------------------------- 
-            elif self.env_name == 'eight':
-            
+            elif self.env_name == 'eight':          
                 # if d.any() or (self.episode_len == self.max_episode_len):     
-                if self.episode_len == self.max_episode_len:                 
-                    
+                if self.episode_len == self.max_episode_len:                                
                     self.logger.log(episode_reward=self.episode_reward.sum(), episode_len = self.episode_len, episode=None)
                     try:
                         self.episode_reward, self.episode_len = 0, 0#TODO:catch up the error
@@ -345,8 +337,6 @@ class OnPolicyRunner:
                         trajs += traj.retrieve()
                         traj = TrajectoryBuffer(device=self.device)
 #--------------------------------------------------------------------------------------    
-
-
         end = time.time()
         print('time in 1 episode is ',end-start)
         trajs += traj.retrieve(length=self.max_episode_len)
@@ -381,7 +371,6 @@ class OnPolicyRunner:
                s = env.get_model_state(s,self.device)
                s1 = env.get_model_state(s1,self.device)
                r = env.get_model_reward(s1,self.device)
-
 
             trajs.store(s, a, r, s1, d, logp)
             s = s1
