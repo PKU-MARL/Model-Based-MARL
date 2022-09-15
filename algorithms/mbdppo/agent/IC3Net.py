@@ -55,9 +55,7 @@ class IC3Net(nn.ModuleList):
         self.use_rtg = agent_args.use_rtg
         self.use_gae_returns = agent_args.use_gae_returns
         self.all_comm = True # TODO: need to update
-
         self.advantage_norm = agent_args.advantage_norm
-
         self.observation_dim = agent_args.observation_dim
         self.action_space = agent_args.action_space
         self.discrete = isinstance(agent_args.action_space, Discrete)
@@ -84,8 +82,6 @@ class IC3Net(nn.ModuleList):
         #self.collect_pi, self.actors = self._init_actors()
         #self.collect_v, self.vs = self._init_vs()
         self.hidden_dim = agent_args.v_args.hidden_dim
-
-
         self.initNetwork(agent_args)
         self.optimizer = Adam(list(self.obs_encoder.parameters())+list(self.comm_gate_head.parameters())+ list(self.message_models.parameters())+list(self.main_models.parameters())+list(self.value_heads.parameters())+list(self.actors.parameters()), lr=self.lr)
         #self.optimizer_pi = Adam(self.actors.parameters(), lr=self.lr)
