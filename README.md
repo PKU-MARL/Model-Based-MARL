@@ -5,11 +5,17 @@ Official PyTorch implementation of the paper "Scalable Model-based Policy Optimi
 
 
 # Algorithms
-1. DMPO (Our method)
+1. DMPO (Decentralized Model-based PO, Our method)
 2. DPPO (Decentralized PPO)
 3. CPPO (Centralized PPO)
 4. IC3Net (Individualized Controlled Continuous Communication Model)
 5. IA2C (Independent Advantage Actor-Critic)
+
+Key parameters for decentralized algorithms:
+1. radius_v: communication radius for value function, 1,2,3....
+2. radius_pi: communication radius for policy, default 1
+3. radius_p: communication radius for environment model, default 1
+
     
 # Environments
 1. CACC Catchup
