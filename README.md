@@ -132,7 +132,7 @@ https://user-images.githubusercontent.com/100258046/176517489-0ec8aed1-7232-41a1
 Please cite our paper if you use the code or datasets in your own work:
 ```
 @article{du2022fully,
-  title={Fully Decentralized Model-based Policy Optimization for Networked Systems},
+  title={Scalable Model-based Policy Optimization for Decentralized Networked Systems},
   author={Du, Yali and Ma, Chengdong and Liu, Yuchen and Lin, Runji and Dong, Hao and Wang, Jun and Yang, Yaodong},
   journal={arXiv preprint arXiv:2207.06559},
   year={2022}
