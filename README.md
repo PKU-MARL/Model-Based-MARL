@@ -54,12 +54,12 @@ in terminal to include the SUMO python packages.
 ## Custom Environments
 We support both discrete and continuous action spaces, similar to gym, in custom environment: 
 
-1. reset(): 
+1. reset (): 
 ```
 Input: None
 Output: State → np.array((number of agent, dimension of state))
 ```
-2. step(): 
+2. step (action): 
 ```
 Input: Action → np.array((number of agent, dimension of action))
 Output: State → np.array((number of agent, dimension of action)), Reward → np.array((number of agent,)), Done → np.array((number of agent,))
