@@ -5,7 +5,7 @@ from torch.distributions.normal import Normal
 from algorithms.utils import collect, mem_report
 from algorithms.models import GaussianActor, GraphConvolutionalModel, MLP, CategoricalActor
 from tqdm.std import trange
-from algorithms.algorithm import ReplayBuffer
+#from algorithms.algorithm import ReplayBuffer
 from ray.state import actors
 from gym.spaces.box import Box
 from gym.spaces.discrete import Discrete
@@ -22,7 +22,7 @@ import multiprocessing as mp
 # import torch.multiprocessing as mp
 from torch import distributed as dist
 import argparse
-from algorithms.mbdppo.buffer import MultiCollect,Trajectory,TrajectoryBuffer,ModelBuffer
+from algorithms.algo.buffer import MultiCollect,Trajectory,TrajectoryBuffer,ModelBuffer
 
 
 class OnPolicyRunner:

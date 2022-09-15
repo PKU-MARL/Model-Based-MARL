@@ -13,7 +13,7 @@ from torch.distributions.normal import Normal
 from algorithms.utils import collect, mem_report
 from algorithms.models import GaussianActor, GraphConvolutionalModel, MLP, CategoricalActor
 from tqdm.std import trange
-from algorithms.algorithm import ReplayBuffer
+# from algorithms.algorithm import ReplayBuffer
 from ray.state import actors
 from gym.spaces.box import Box
 from gym.spaces.discrete import Discrete
@@ -29,8 +29,8 @@ import random
 import multiprocessing as mp
 from torch import distributed as dist
 import argparse
-from algorithms.mbdppo.agent.DPPO import DPPOAgent
-from algorithms.mbdppo.buffer import MultiCollect,Trajectory,TrajectoryBuffer,ModelBuffer
+from algorithms.algo.agent.DPPO import DPPOAgent
+from algorithms.algo.buffer import MultiCollect,Trajectory,TrajectoryBuffer,ModelBuffer
 
 class ModelBasedAgent(nn.ModuleList):
     def __init__(self, logger, device, agent_args,env_args, **kwargs):
@@ -163,7 +163,7 @@ class HiddenAgent(ModelBasedAgent):
         embeddings = torch.stack(embeddings, dim=-2)
         return embeddings
 
-class MB_DPPOAgent(ModelBasedAgent, DPPOAgent):
+class DMPOAgent(ModelBasedAgent, DPPOAgent):
     def __init__(self, logger, device, agent_args,env_args, **kwargs):
         super().__init__(logger, device, agent_args,env_args, **kwargs)
     
@@ -179,7 +179,7 @@ class MB_DPPOAgent(ModelBasedAgent, DPPOAgent):
             kl_exceeded = any(kls)
         return kl_exceeded or r_converged and entropy_converged
 
-class MB_DPPOAgent_Hidden(HiddenAgent, MB_DPPOAgent):
+class MB_DPPOAgent_Hidden(HiddenAgent, DMPOAgent):
     def __init__(self, logger, device, agent_args, **kwargs):
         super().__init__(logger, device, agent_args, **kwargs)
     

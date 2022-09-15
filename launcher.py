@@ -20,9 +20,8 @@ from torch import distributed as dist
 # from algorithms.envs.Drones import Drones_Env
 
 
-from algorithms.mbdppo.main import OnPolicyRunner
+from algorithms.algo.main import OnPolicyRunner
 os.environ['MKL_SERVICE_FORCE_INTEL']='1'
-from algorithms.algorithm import RL
 import torch
 import argparse
 
@@ -179,8 +178,8 @@ def override(alg_args, run_args, env_fn_train, input_args):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--env', type=str, required=False, default='Monaco', help="environment(eight/ring/catchup/slowdown/Grid/Monaco/)")
-    parser.add_argument('--algo', type=str, required=False, default='DPPO', help="algorithm(DMPO/IC3Net/CPPO/DPPO) ")
+    parser.add_argument('--env', type=str, required=False, default='catchup', help="environment(eight/ring/catchup/slowdown/Grid/Monaco/)")
+    parser.add_argument('--algo', type=str, required=False, default='DMPO', help="algorithm(DMPO/IC3Net/CPPO/DPPO/IA2C) ")
     parser.add_argument('--name', type=str, required=False, default='', help="the additional name for logger")
     parser.add_argument('--para', type=str, required=False, default='{}', help="the hyperparameter json string" )
     
@@ -199,13 +198,15 @@ input_args = parse_args()
 
 # import agent [must put here, if in a function, import will become local]
 if input_args.algo == 'IA2C':
-    from algorithms.mbdppo.agent.IA2C import IA2C as agent_fn
+    from algorithms.algo.agent.IA2C import IA2C as agent_fn
 elif input_args.algo == 'IC3Net':
-    from algorithms.mbdppo.agent.IC3Net import IC3Net as agent_fn
-elif input_args.algo in ['CPPO', 'DPPO']:
-    from algorithms.mbdppo.agent.DPPO import DPPOAgent as agent_fn
-elif input_args.algo in ['DMPO']:
-    from algorithms.mbdppo.agent.MB_DPPO import MB_DPPOAgent as agent_fn
+    from algorithms.algo.agent.IC3Net import IC3Net as agent_fn
+elif input_args.algo == 'DPPO':
+    from algorithms.algo.agent.DPPO import DPPOAgent as agent_fn
+elif input_args.algo == 'CPPO':
+    from algorithms.algo.agent.CPPO import CPPOAgent as agent_fn
+elif input_args.algo == 'DMPO':
+    from algorithms.algo.agent.DMPO import DMPOAgent as agent_fn
 
 env_args = getEnvArgs()
 env_fn_train, env_fn_test = initEnv(input_args)

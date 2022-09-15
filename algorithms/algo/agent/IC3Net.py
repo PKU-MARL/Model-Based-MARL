@@ -13,7 +13,7 @@ from torch.distributions.normal import Normal
 from algorithms.utils import collect, mem_report
 from algorithms.models import GaussianActor, GraphConvolutionalModel, MLP, CategoricalActor
 from tqdm.std import trange
-from algorithms.algorithm import ReplayBuffer
+# from algorithms.algorithm import ReplayBuffer
 from ray.state import actors
 from gym.spaces.box import Box
 from gym.spaces.discrete import Discrete
@@ -29,7 +29,7 @@ import random
 import multiprocessing as mp
 from torch import distributed as dist
 import argparse
-from algorithms.mbdppo.buffer import MultiCollect,Trajectory,TrajectoryBuffer,ModelBuffer
+from algorithms.algo.buffer import MultiCollect,Trajectory,TrajectoryBuffer,ModelBuffer
 
 class IC3Net(nn.ModuleList):
     def __init__(self, logger, device, agent_args, input_args, **kwargs):
@@ -87,20 +87,23 @@ class IC3Net(nn.ModuleList):
         #self.optimizer_pi = Adam(self.actors.parameters(), lr=self.lr)
 
     def initNetwork(self, agent_args):
+
         # [one for all]observation encoding layer
-        self.obs_encoder = nn.Linear(self.observation_dim, self.hidden_dim)
+        self.obs_encoder = nn.Linear(self.observation_dim, self.hidden_dim).to(self.device)
 
         # [1 v 1] communication gated action layer, first dim for comm, second dim for not
-        self.comm_gate_head = nn.ModuleList([nn.Linear(self.hidden_dim, 2) for i in range(self.n_agent)])
+        self.comm_gate_head = nn.ModuleList([nn.Linear(self.hidden_dim, 2).to(self.device) for i in range(self.n_agent)])
 
         # [1 v 1] message fussion layer
-        self.message_models = nn.ModuleList([nn.Linear(self.hidden_dim, self.hidden_dim) for i in range(self.n_agent)])
+        self.message_models = nn.ModuleList([nn.Linear(self.hidden_dim, self.hidden_dim).to(self.device) for i in range(self.n_agent)])
 
         # [1 v 1] main layer
-        self.main_models = nn.ModuleList([nn.Linear(self.hidden_dim, self.hidden_dim) for i in range(self.n_agent)])
+        self.main_models = nn.ModuleList([nn.Linear(self.hidden_dim, self.hidden_dim).to(self.device) for i in range(self.n_agent)])
 
         # value head
-        self.value_heads = nn.ModuleList([nn.Linear(self.hidden_dim, 1) for i in range(self.n_agent)])
+        self.value_heads = nn.ModuleList([nn.Linear(self.hidden_dim, 1).to(self.device) for i in range(self.n_agent)])
+
+
 
         # action head
         if self.discrete:
@@ -128,10 +131,10 @@ class IC3Net(nn.ModuleList):
                 tensor_shape = traj[name].shape
                 full_part_shape = [max_traj_length - tensor_shape[0]] + list(tensor_shape[1:])
                 if name == 'd':
-                    traj_all[name].append(torch.cat([traj[name], torch.ones(full_part_shape, dtype=torch.bool)], dim=0))
+                    traj_all[name].append(torch.cat([traj[name], torch.ones(full_part_shape, dtype=torch.bool, device=self.device)], dim=0))
                 else:
                     traj_all[name].append(
-                        torch.cat([traj[name], torch.zeros(full_part_shape, dtype=traj[name].dtype)], dim=0))
+                        torch.cat([traj[name], torch.zeros(full_part_shape, dtype=traj[name].dtype, device=self.device)], dim=0))
         # should be 4-dim [batch * step * n_agent * dim]
         traj = {name: torch.stack(value, dim=0) for name, value in traj_all.items()}
 

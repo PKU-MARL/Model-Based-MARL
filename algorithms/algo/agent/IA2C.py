@@ -11,7 +11,7 @@ from torch.distributions.normal import Normal
 from algorithms.utils import collect, mem_report
 from algorithms.models import GaussianActor, GraphConvolutionalModel, MLP, CategoricalActor
 from tqdm.std import trange
-from algorithms.algorithm import ReplayBuffer
+# from algorithms.algorithm import ReplayBuffer
 from ray.state import actors
 from gym.spaces.box import Box
 from gym.spaces.discrete import Discrete
@@ -27,7 +27,7 @@ import random
 import multiprocessing as mp
 from torch import distributed as dist
 import argparse
-from algorithms.mbdppo.buffer import MultiCollect,Trajectory,TrajectoryBuffer,ModelBuffer
+from algorithms.algo.buffer import MultiCollect,Trajectory,TrajectoryBuffer,ModelBuffer
 
 class IA2C(nn.ModuleList):
     def __init__(self, logger, device, agent_args, input_args, **kwargs):
@@ -190,7 +190,15 @@ class IA2C(nn.ModuleList):
 
     def save(self, info=None):
         self.logger.save(self, info=info)
-
+        
+    def save_nets(self, dir_name,episode):
+        if not os.path.exists(dir_name + '/Models'):
+            os.mkdir(dir_name + '/Models')
+        # torch.save(self.critic.state_dict(), dir_name + '/Models/' +str(episode)+ 'best_critic.pt')
+        torch.save(self.actors.state_dict(), dir_name + '/Models/' + str(episode)+ 'best_actor.pt')
+        # torch.save(self.actors.state_dict(), dir_name + '/' +str(episode)+ 'best_actor.pt')
+        print('RL saved successfully')
+        
     def _evalV(self, s):
         # Requires input in shape [-1, n_agent, dim]
         s = s.to(self.device)
@@ -206,9 +214,9 @@ class IA2C(nn.ModuleList):
         for i in range(self.n_agent):
             self.pi_args.sizes[0] = collect_pi.degree[i] * self.observation_dim
             if self.discrete:
-                actors.append(CategoricalActor(**self.pi_args._toDict()))
+                actors.append(CategoricalActor(**self.pi_args._toDict()).to(self.device))
             else:
-                actors.append(GaussianActor(action_dim=self.action_dim, **self.pi_args._toDict()))
+                actors.append(GaussianActor(action_dim=self.action_dim, **self.pi_args._toDict()).to(self.device))
         return collect_pi, actors
 
     def _init_vs(self):
@@ -217,7 +225,7 @@ class IA2C(nn.ModuleList):
         for i in range(self.n_agent):
             self.v_args.sizes[0] = collect_v.degree[i] * self.observation_dim
             v_fn = self.v_args.network
-            vs.append(v_fn(**self.v_args._toDict()))
+            vs.append(v_fn(**self.v_args._toDict()).to(self.device))
         return collect_v, vs
 
     def updateAgent(self, trajs, clip=None):
@@ -234,9 +242,9 @@ class IA2C(nn.ModuleList):
                 tensor_shape = traj[name].shape
                 full_part_shape = [max_traj_length - tensor_shape[0]] + list(tensor_shape[1:])
                 if name == 'd':
-                    traj_all[name].append(torch.cat([traj[name], torch.ones(full_part_shape, dtype=torch.bool)], dim = 0))
+                    traj_all[name].append(torch.cat([traj[name], torch.ones(full_part_shape, dtype=torch.bool, device=self.device)], dim = 0))
                 else:
-                    traj_all[name].append(torch.cat([traj[name], torch.zeros(full_part_shape, dtype=traj[name].dtype)], dim = 0))
+                    traj_all[name].append(torch.cat([traj[name], torch.zeros(full_part_shape, dtype=traj[name].dtype, device=self.device)], dim = 0))
         # should be 4-dim [batch * step * n_agent * dim]
         traj = {name:torch.stack(value, dim=0) for name, value in traj_all.items()}
 

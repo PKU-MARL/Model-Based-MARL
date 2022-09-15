@@ -15,7 +15,7 @@ from torch.distributions.multivariate_normal import MultivariateNormal
 from torch.distributions.categorical import Categorical
 from torch.optim import Adam
 
-from .base_util import batch_to_seq, init_layer, one_hot
+# from .base_util import batch_to_seq, init_layer, one_hot
 
 
 def MLP(sizes, activation, output_activation=nn.Identity, **kwargs):
