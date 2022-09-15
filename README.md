@@ -54,16 +54,21 @@ in terminal to include the SUMO python packages.
 ## Custom Environments
 We support both discrete and continuous action spaces, similar to gym, in custom environment: 
 1.reset(): 
+```
 Input: None
 Output: State → np.array((number of agent, dimension of state))
+```
 2.step(): 
+```
 Input: Action → np.array((number of agent, dimension of action))
 Output: State → np.array((number of agent, dimension of action)), Reward → np.array((number of agent,)), Done → np.array((number of agent,))
+```
 3.You need to create a parameter file such as Catchup_CPPO.py in algorithms/config
 
 ## Logging data during training
 We uses WandB as logger. 
 1. Setting up WandB.
+2. 
 Before running our code, you should log in to WandB locally. Please refer to https://docs.wandb.ai/quickstart for more detail.
 
 # Usage
