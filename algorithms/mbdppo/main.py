@@ -72,12 +72,12 @@ class OnPolicyRunner:
             self.model_length_schedule = alg_args.model_length_schedule
             self.model_prob = alg_args.model_prob
         self.s, self.episode_len, self.episode_reward = self.env_learn.reset(), 0, 0
+        
         # load pretrained model
         self.load_pretrained_model = alg_args.load_pretrained_model
         if self.model_based and self.load_pretrained_model:
             self.agent.load_model(alg_args.pretrained_model)
-            
-
+       
     def run(self):
         if self.model_based and not self.load_pretrained_model:
             for _ in trange(self.n_warmup):
@@ -86,12 +86,12 @@ class OnPolicyRunner:
             self.updateModel(self.n_model_update_warmup) # Sample trajectories, then shorten them.
 
         for iter in trange(self.n_iter):
-            
+            # save model:
             
             # if iter % self.test_interval == 0:
             if iter % 50 == 0:
                 mean_return = self.test(iter)
-                #self.agent.save(info = mean_return)
+                self.agent.save(info = mean_return)
                 
 
             if self.env_name == 'UAV_9d' or self.env_name == 'UAV_9':
@@ -106,22 +106,21 @@ class OnPolicyRunner:
                 if iter % 1000 == 0:
                     self.agent.save_nets(f'./checkpoints/{self.name}',iter)            
 
-
-
             trajs = self.rollout_env()  #  TO cheak: rollout n_step, maybe multi trajs
             t1=time.time()              
             if self.model_based:
                 self.model_buffer.storeTrajs(trajs)
+                # train the environment model
                 if iter % 10 == 0:
                     self.updateModel()
             t2=time.time()
             print('t=',t2-t1)
-              
-                
+                         
             agentInfo = []
             real_trajs = trajs
             for inner in trange(self.n_inner_iter):
                 if self.model_based:
+                    ## Use the model with a certain probability                  
                     use_model = np.random.uniform() < self.model_prob
                     if use_model:
                         if self.model_length_schedule is not None:
@@ -265,6 +264,8 @@ class OnPolicyRunner:
             if self.episode_len == self.max_episode_len:
                 d = np.zeros(d.shape, dtype=np.float32)
             d = np.array(d)
+            
+            # Do some rescales for different environments
 #-----------------------------------------------------------------------------------------  
             # #for CACC_env(catchup and slowdown)
             if self.env_name == 'catchup' or self.env_name == 'slowdown':  
@@ -352,7 +353,7 @@ class OnPolicyRunner:
         self.logger.log(env_rollout_time=time.time()-time_t)
         return trajs
     
-    
+    # Use the environment model to collect data
     def rollout_model(self, trajs, length=0):
         time_t = time.time()
         n_traj = self.n_traj
