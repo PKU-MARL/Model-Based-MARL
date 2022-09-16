@@ -1,5 +1,5 @@
 
-<img src="algorithms/Logo.png" width="999" border="1"/>
+<img src="algorithms/logo.png" width="999" border="1"/>
 
 Official PyTorch implementation of the paper "Scalable Model-based Policy Optimization for Decentralized Networked Systems", accepted by The 2022 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS 2022)
 [arXiv](https://arxiv.org/abs/2207.06559)
