@@ -83,22 +83,18 @@ Before running our code, you should log in to WandB locally. Please refer to htt
 # Usage
 Train the agent by:
 ```python
-python launcher.py --env ENV --algo ALGO --name NAME --para PARA
+python launcher.py --env ENV --algo ALGO
 ```
 `ENV` specifies which environment to run in, including `eight`, `ring`, `catchup`, `slowdown`, `Grid`, `Monaco`, `custom_env_name`.
 
 `ALGO` specifies the algorithm to use, including `IC3Net`, `CPPO`, `DPPO`, `DMPO`, `IA2C`.
 
-`NAME` is the additional name for the logger, which is set to `''` as default.
-
-`PARA` is the hyperparameter json string. The default parameters are loaded from config folder, and this would override specific parameters.
-
 such as:
 ```python
-python launcher.py --env 'slowdown' --algo 'DMPO' --name ' ' --para '{}'
+python launcher.py --env 'slowdown' --algo 'DMPO'
 ```
 ```python
-python launcher.py --env 'catchup' --algo 'DPPO' --name ' ' --para '{}'
+python launcher.py --env 'catchup' --algo 'DPPO'
 ```
 
 # Results in video form
