@@ -92,6 +92,7 @@ python launcher.py --env ENV --algo ALGO --name NAME --para PARA
 `NAME` is the additional name for the logger, which is set to `''` as default.
 
 `PARA` is the hyperparameter json string. The default parameters are loaded from config folder, and this would override specific parameters.
+
 such as:
 ```python
 python launcher.py --env 'slowdown' --algo 'DMPO' --name ' ' --para '{}'
