@@ -83,18 +83,20 @@ Before running our code, you should log in to WandB locally. Please refer to htt
 # Usage
 Train the agent by:
 ```python
-python launcher.py --env ENV --algo ALGO
+python launcher.py --env ENV --algo ALGO --device DEVICE
 ```
 `ENV` specifies which environment to run in, including `eight`, `ring`, `catchup`, `slowdown`, `Grid`, `Monaco`, `custom_env_name`.
 
 `ALGO` specifies the algorithm to use, including `IC3Net`, `CPPO`, `DPPO`, `DMPO`, `IA2C`.
 
+`DEVICE` specifies the device to use, including `cpu`, `cuda:0`, `cuda:1`, `cuda:2`...
+
 such as:
 ```python
-python launcher.py --env 'slowdown' --algo 'DMPO'
+python launcher.py --env 'slowdown' --algo 'DMPO' --device 'cuda:0'
 ```
 ```python
-python launcher.py --env 'catchup' --algo 'DPPO'
+python launcher.py --env 'catchup' --algo 'DPPO' --device 'cuda:0'
 ```
 
 # Results in video form
