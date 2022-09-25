@@ -30,7 +30,7 @@ import argparse
 
 
 #offline wandb
-#os.environ["WANDB_API_KEY"] = '4c1c4bb4621d16d5d7dc6ab8cba6687c54cb8638'
+#os.environ["WANDB_API_KEY"] = 'your api key'
 #os.environ["WANDB_MODE"] = "offline"
 
 
