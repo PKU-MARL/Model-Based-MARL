@@ -48,7 +48,7 @@ def getRunArgs(input_args):
     run_args.n_thread = 1
     run_args.parallel = False
     
-    run_args.device = 'cuda:0'
+    run_args.device = input_args.device
  
     run_args.n_cpu = 1/4
     run_args.n_gpu = 0
@@ -179,7 +179,8 @@ def override(alg_args, run_args, env_fn_train, input_args):
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--env', type=str, required=False, default='catchup', help="environment(eight/ring/catchup/slowdown/Grid/Monaco/)")
-    parser.add_argument('--algo', type=str, required=False, default='DMPO', help="algorithm(DMPO/IC3Net/CPPO/DPPO/IA2C) ")
+    parser.add_argument('--algo', type=str, required=False, default='CPPO', help="algorithm(DMPO/IC3Net/CPPO/DPPO/IA2C) ")
+    parser.add_argument('--device', type=str, required=False, default='cuda:0', help="device(cpu/cuda:0/cuda:1/...) ")
     parser.add_argument('--name', type=str, required=False, default='', help="the additional name for logger")
     parser.add_argument('--para', type=str, required=False, default='{}', help="the hyperparameter json string" )
     
