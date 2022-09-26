@@ -99,6 +99,24 @@ python launcher.py --env 'slowdown' --algo 'DMPO' --device 'cuda:0'
 python launcher.py --env 'catchup' --algo 'DPPO' --device 'cuda:0'
 ```
 
+Test the agent by:
+After trainging, the actors model will be saved in checkpoints/standard _xxx/Models/xxxbest_actor.pt,
+You just need to add :
+```python
+self.actors.load_state_dict(torch.load(test_actors_model))
+```
+after initializing actors:
+```python
+self.collect_pi, self.actors = self._init_actors()
+```
+where:
+```python
+test_actors_model = 'checkpoints/standard _xxx/Models/xxxbest_actor.pt'
+```
+
+
+
+
 # Results in video form
 ## Description of the following videos in ATSC-Grid
 ![ATSC-Grid Net](https://user-images.githubusercontent.com/100258046/163699030-7e9ad4f4-8f62-43ad-8825-4d7ffeb7df1f.png)
