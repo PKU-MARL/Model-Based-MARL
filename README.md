@@ -100,8 +100,9 @@ python launcher.py --env 'catchup' --algo 'DPPO' --device 'cuda:0'
 ```
 
 Test the agent by:
+
 After trainging, the actors model will be saved in checkpoints/standard _xxx/Models/xxxbest_actor.pt,
-You just need to add :
+You just need to add following code in algorithms/algo/agent/DPPO.py(DMPO.py/CPPO.py/...):
 ```python
 self.actors.load_state_dict(torch.load(test_actors_model))
 ```
