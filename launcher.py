@@ -64,8 +64,6 @@ def getRunArgs(input_args):
     run_args.radius_p = 1 
     
     
-    run_args.radius_pi = 1
-    run_args.radius_p = 1
     
     run_args.init_checkpoint = None
     run_args.start_step = 0
@@ -96,6 +94,11 @@ def initArgs(run_args, env_train, env_test, input_arg):
         run_args.radius_v = 1
         run_args.radius_pi = 1
         run_args.radius_p = 1
+        
+    if input_arg.algo in ['CPPO']:
+        run_args.radius_v = env_train.n_agent # n_agent
+        run_args.radius_pi = 1
+        run_args.radius_p = 1 
 
 
 
