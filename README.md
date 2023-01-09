@@ -119,6 +119,13 @@ test_actors_model = 'checkpoints/standard _xxx/Models/xxxbest_actor.pt'
 
 
 # Results in video form
+## Description of the following videos in Figure Eight
+Our model controls the formation of queues to cross intersection with an orderly process of accelerating to the target velocity and then decelerating to the safe velocity near 0 m/s. We conclude that our models control vehicles to obey traffic rules while improving the efficiency of the overall traffic flow.
+
+### Execution result of DMPO(Our method) in Figure Eight
+https://user-images.githubusercontent.com/100258046/211249589-54013fc4-d36e-4625-8b56-09c66acd47ac.mp4
+
+
 ## Description of the following videos in ATSC-Grid
 ![ATSC-Grid Net](https://user-images.githubusercontent.com/100258046/163699030-7e9ad4f4-8f62-43ad-8825-4d7ffeb7df1f.png)
 
