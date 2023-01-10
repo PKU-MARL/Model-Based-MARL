@@ -3,7 +3,7 @@
 
 Official PyTorch implementation of the paper "Scalable Model-based Policy Optimization for Decentralized Networked Systems", accepted by The 2022 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS 2022)
 
-Paper link: [Scalable Model-based Policy Optimization for Decentralized Networked Systems](https://arxiv.org/abs/2207.06559)
+Paper link: [Scalable Model-based Policy Optimization for Decentralized Networked Systems](https://ieeexplore.ieee.org/abstract/document/9982253)
 
 
 # Algorithms
@@ -165,10 +165,12 @@ https://user-images.githubusercontent.com/100258046/176517489-0ec8aed1-7232-41a1
 # Cite
 Please cite our paper if you use the code or datasets in your own work:
 ```
-@article{du2022fully,
+@inproceedings{du2022scalable,
   title={Scalable Model-based Policy Optimization for Decentralized Networked Systems},
   author={Du, Yali and Ma, Chengdong and Liu, Yuchen and Lin, Runji and Dong, Hao and Wang, Jun and Yang, Yaodong},
-  journal={arXiv preprint arXiv:2207.06559},
-  year={2022}
+  booktitle={2022 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)},
+  pages={9019--9026},
+  year={2022},
+  organization={IEEE}
 }
 ```
