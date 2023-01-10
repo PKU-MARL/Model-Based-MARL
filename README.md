@@ -162,7 +162,7 @@ This is a 5×5 formation grid of UAV swarm. The objective of UAVFC is to reach t
 ### Execution results of DMPO(Our method) and CPPO(Centralized PPO) in UAVFC
 https://user-images.githubusercontent.com/100258046/176517489-0ec8aed1-7232-41a1-8c3f-5047225237db.mp4
 
-# Cite
+# Citation
 Please cite our paper if you use the code or datasets in your own work:
 ```
 @inproceedings{du2022scalable,
