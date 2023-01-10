@@ -15,9 +15,9 @@ def getArgs(radius_p, radius_v, radius_pi, env):
     alg_args.n_test = 5
     alg_args.model_validate_interval = 10
     alg_args.test_interval = 20
-    alg_args.rollout_length = 1500
-    alg_args.test_length = 1500
-    alg_args.max_episode_len = 1500
+    alg_args.rollout_length = 3000
+    alg_args.test_length = 3000
+    alg_args.max_episode_len = 3000
     alg_args.model_based = False
     alg_args.load_pretrained_model = False
     alg_args.pretrained_model = 'checkpoints/standard_makeFigureEight2_MB_DPPOAgent_17361/81501_5222.7847817614875.pt'
