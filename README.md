@@ -122,12 +122,12 @@ test_actors_model = 'checkpoints/standard _xxx/Models/xxxbest_actor.pt'
 ## Description of the following videos in Figure Eight
 Our model controls the formation of queues to cross intersection with an orderly process of accelerating to the target velocity and then decelerating to the safe velocity near 0 m/s. We conclude that our models control vehicles to obey traffic rules while improving the efficiency of the overall traffic flow.
 
-### Execution result of DMPO(Our method) in Figure Eight
+### Execution result of DMPO in Figure Eight
 https://user-images.githubusercontent.com/100258046/211249589-54013fc4-d36e-4625-8b56-09c66acd47ac.mp4
 
 ## Description of the following videos in Ring Attenuation
 Our model can maintain the stability of the ring traffic flow and improve the efficiency of the overall traffic flow.
-### Execution result of DMPO(Our method) in Ring Attenuation
+### Execution result of DMPO in Ring Attenuation
 https://user-images.githubusercontent.com/100258046/215239512-c0c643dc-131c-40bd-9278-3d714e8b506a.mp4
 
 
@@ -137,10 +137,10 @@ https://user-images.githubusercontent.com/100258046/215239512-c0c643dc-131c-40bd
 This is the network structure of 5*5 intersections in ATSC-Grid. The highlighted areas of the red frame are shown in the following videos and they are also the key area for displaying execution result in DPPO and DMPO. Through the key indicator "Insertion-backlogged vehicles" in the numerical panel on the left, we can observe that "Insertion-backlogged vehicles" will gradually increase with the load of the traffic flow, and then gradually decrease with the effective decision of the traffic light. The maximum value of this indicator is 1486 vehs in DPPO and 1033 vehs in DMPO, which indicates that DMPO can reduce the backlog of vehicles at intersections. Therefore, compared with DPPO, DMPO is more effective in solving traffic jams. Through the three intersections we focused on in the video, we can also observe that DMPO can make traffic jams last for less time.
 
 
-### Execution result of DPPO(Decentralized PPO) in ATSC-Grid
+### Execution result of DPPO in ATSC-Grid
 https://user-images.githubusercontent.com/100258046/163685533-f85cd0ba-a3f6-457c-a35f-e13bfbe47481.mp4
 
-### Execution result of DMPO(Our method) in ATSC-Grid
+### Execution result of DMPO in ATSC-Grid
 https://user-images.githubusercontent.com/100258046/163685524-4b1a1ef7-3a01-44da-897e-b8f6f1d48d61.mp4
 
 
@@ -152,10 +152,10 @@ This is a more challenging scenario with a heterogeneous network structure with 
 
 
 
-### Execution result of DPPO(Decentralized PPO) in ATSC-Monaco
+### Execution result of DPPO in ATSC-Monaco
 https://user-images.githubusercontent.com/100258046/165706056-cac77b41-e3af-4e2b-bda1-3e42f0b5ac17.mp4
 
-### Execution result of DMPO(Our method) in ATSC-Monaco
+### Execution result of DMPO in ATSC-Monaco
 https://user-images.githubusercontent.com/100258046/165706098-d8cf2009-c7e6-4a7a-9040-c417d38cbeef.mp4
 
 
@@ -164,7 +164,7 @@ https://user-images.githubusercontent.com/100258046/165706098-d8cf2009-c7e6-4a7a
 
 This is a 5×5 formation grid of UAV swarm. The objective of UAVFC is to reach the destination, avoid forest and maintain formation. We tested the performance of different algorithms under the same scenario. From the following videos, we can observe that the swarm of UAVs all approached their destination, avoided the trees and maintained the formation in DMPO, but in this process there are some UAVs out of the formation in CPPO.
 
-### Execution results of DMPO(Our method) and CPPO(Centralized PPO) in UAVFC
+### Execution results of DMPO and CPPO in UAVFC
 https://user-images.githubusercontent.com/100258046/176517489-0ec8aed1-7232-41a1-8c3f-5047225237db.mp4
 
 # Citation
