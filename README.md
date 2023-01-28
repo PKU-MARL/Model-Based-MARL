@@ -125,6 +125,11 @@ Our model controls the formation of queues to cross intersection with an orderly
 ### Execution result of DMPO(Our method) in Figure Eight
 https://user-images.githubusercontent.com/100258046/211249589-54013fc4-d36e-4625-8b56-09c66acd47ac.mp4
 
+## Description of the following videos in Ring Attenuation
+Our model can maintain the stability of the ring traffic flow and improve the efficiency of the overall traffic flow.
+### Execution result of DMPO(Our method) in Ring Attenuation
+https://user-images.githubusercontent.com/100258046/215239512-c0c643dc-131c-40bd-9278-3d714e8b506a.mp4
+
 
 ## Description of the following videos in ATSC-Grid
 ![ATSC-Grid Net](https://user-images.githubusercontent.com/100258046/163699030-7e9ad4f4-8f62-43ad-8825-4d7ffeb7df1f.png)
